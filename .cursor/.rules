@@ -47,8 +47,8 @@ globs:
 
 * **Always read and adhere to the project description file**, located at `@PROJECT_SPEC.md`, for high-level requirements.
 * When asked to create a new component, **default to using functional components with hooks**.
-* **Always import and use utility classes** from Tailwind CSS for styling. Never add inline `style` objects.
-* When implementing drag-and-drop functionality, consider libraries like `react-dnd` or `dnd-kit` as they are widely used and well-documented.
-* For the tuning management feature, remember that custom tunings should be stored in the browser's **`localStorage`**. Create a custom React hook (e.g., `useTunings.ts`) to manage the state and persistence of these tunings.
-* For the hidden routes, use **React Router's `BrowserRouter`** and define a route like `/admin/tunings` that is not linked from the main UI but is still accessible.
-* When generating code for shadcn/ui components, make sure to import them correctly from the `@/components/ui` alias.
+* **Styling**: The primary styling methodology is **Tailwind CSS**. However, for custom component styles that are not well-suited for utility classes, create a separate CSS file (`.css`) with the same name as the component. This file should be directly imported into the component's TypeScript file. Avoid using inline `style` objects.
+* **Drag-and-Drop**: The project uses **`dnd-kit`** for all drag-and-drop functionality. Use the hooks and components provided by `dnd-kit` to implement the progression creator feature.
+* **Tuning Management**: Custom tunings should be stored in the browser's **`localStorage`**. Create a custom React hook (e.g., `useTunings.ts`) to manage the state and persistence of these tunings.
+* **Routing**: Use **React Router's `BrowserRouter`** and define a route like `/admin/tunings` that is not linked from the main UI but is still accessible.
+* **Component Usage**: When generating code for UI elements, prioritize the use of imported **`shadcn/ui`** components from the `@/components/ui` alias.
