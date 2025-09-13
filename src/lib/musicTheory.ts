@@ -136,7 +136,7 @@ export function generateChord(root: Note, chordType: string): Chord {
 }
 
 // Generate diatonic chords for a key and mode
-export function generateDiatonicChords(key: Note, mode: string): Chord[] {
+export function generateDiatonicChords(key: Note, mode: string, chordTypes: string[] = ['triad']): Chord[] {
   const modeIntervals = MODES[mode as keyof typeof MODES];
   if (!modeIntervals) {
     throw new Error(`Unknown mode: ${mode}`);
@@ -144,30 +144,61 @@ export function generateDiatonicChords(key: Note, mode: string): Chord[] {
 
   const chords: Chord[] = [];
   
-  // Generate triads for each degree of the mode
+  // Generate chords for each degree of the mode
   for (let i = 0; i < 7; i++) {
     const root = addSemitones(key, modeIntervals[i]);
     const third = addSemitones(key, modeIntervals[(i + 2) % 7]);
     const fifth = addSemitones(key, modeIntervals[(i + 4) % 7]);
+    const seventh = addSemitones(key, modeIntervals[(i + 6) % 7]);
     
     // Determine chord quality based on intervals
     const rootToThird = getSemitoneDifference(root, third);
     const rootToFifth = getSemitoneDifference(root, fifth);
+    const rootToSeventh = getSemitoneDifference(root, seventh);
     
-    let chordType: string;
-    if (rootToThird === 4 && rootToFifth === 7) {
-      chordType = 'maj';
-    } else if (rootToThird === 3 && rootToFifth === 7) {
-      chordType = 'min';
-    } else if (rootToThird === 3 && rootToFifth === 6) {
-      chordType = 'dim';
-    } else if (rootToThird === 4 && rootToFifth === 8) {
-      chordType = 'aug';
-    } else {
-      chordType = 'maj'; // fallback
+    // Generate different chord types based on selection
+    for (const chordType of chordTypes) {
+      let chordSymbol: string;
+      
+      if (chordType === 'triad') {
+        // Basic triads
+        if (rootToThird === 4 && rootToFifth === 7) {
+          chordSymbol = 'maj';
+        } else if (rootToThird === 3 && rootToFifth === 7) {
+          chordSymbol = 'min';
+        } else if (rootToThird === 3 && rootToFifth === 6) {
+          chordSymbol = 'dim';
+        } else if (rootToThird === 4 && rootToFifth === 8) {
+          chordSymbol = 'aug';
+        } else {
+          chordSymbol = 'maj'; // fallback
+        }
+      } else if (chordType === '7th') {
+        // 7th chords
+        if (rootToThird === 4 && rootToFifth === 7) {
+          chordSymbol = rootToSeventh === 11 ? 'maj7' : 'dom7';
+        } else if (rootToThird === 3 && rootToFifth === 7) {
+          chordSymbol = 'min7';
+        } else if (rootToThird === 3 && rootToFifth === 6) {
+          chordSymbol = 'min7b5';
+        } else {
+          chordSymbol = 'maj7'; // fallback
+        }
+      } else if (chordType === '9th') {
+        // 9th chords (simplified - using 7th chord types with 9th extensions)
+        if (rootToThird === 4 && rootToFifth === 7) {
+          chordSymbol = rootToSeventh === 11 ? 'maj9' : 'dom9';
+        } else if (rootToThird === 3 && rootToFifth === 7) {
+          chordSymbol = 'min9';
+        } else {
+          chordSymbol = 'maj9'; // fallback
+        }
+      } else {
+        continue; // Skip unknown chord types
+      }
+      
+      chords.push(generateChord(root, chordSymbol));
     }
-    
-    chords.push(generateChord(root, chordType));
   }
   
   return chords;
@@ -180,7 +211,7 @@ export function getNoteAtFret(tuning: Tuning, stringIndex: number, fret: number)
 }
 
 // Find chord voicings on fretboard
-export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number = 24): ChordVoicing[] {
+export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number = 24, flexibility: 'strict' | 'flexible' | 'all' = 'strict'): ChordVoicing[] {
   const voicings: ChordVoicing[] = [];
   const stringCount = tuning.strings.length;
   const maxVoicings = 50; // Limit to prevent performance issues
@@ -215,13 +246,31 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
   ): void {
     if (voicings.length >= maxVoicings) return; // Early exit if we have enough voicings
     
-    if (currentPositions.length >= 3) { // At least 3 notes for a chord
-      // Check if we have all chord notes
-      const hasAllChordNotes = chord.notes.every(chordNote => 
-        currentPositions.some(pos => pos.note.semitone === chordNote.semitone)
-      );
+    if (currentPositions.length >= 2) { // At least 2 notes for a partial chord
+      // Check voicing requirements based on flexibility
+      let meetsRequirements = false;
       
-      if (hasAllChordNotes) {
+      if (flexibility === 'strict') {
+        // Must have all chord notes
+        meetsRequirements = chord.notes.every(chordNote => 
+          currentPositions.some(pos => pos.note.semitone === chordNote.semitone)
+        );
+      } else if (flexibility === 'flexible') {
+        // Must have at least 3 notes, including root and one other chord tone
+        const hasRoot = currentPositions.some(pos => pos.note.semitone === chord.root.semitone);
+        const hasOtherChordTone = chord.notes.some(chordNote => 
+          chordNote.semitone !== chord.root.semitone && 
+          currentPositions.some(pos => pos.note.semitone === chordNote.semitone)
+        );
+        meetsRequirements = currentPositions.length >= 3 && hasRoot && hasOtherChordTone;
+      } else if (flexibility === 'all') {
+        // Any combination of chord notes (at least 2)
+        meetsRequirements = currentPositions.some(pos => 
+          chord.notes.some(chordNote => pos.note.semitone === chordNote.semitone)
+        );
+      }
+      
+      if (meetsRequirements) {
         // Calculate inversion (which chord note is in the bass)
         const bassNote = currentPositions[0].note;
         const bassChordIndex = chord.notes.findIndex(note => note.semitone === bassNote.semitone);
@@ -303,4 +352,15 @@ export function getAllModes(): string[] {
 // Get all available tunings for a guitar type
 export function getTuningsForGuitarType(guitarType: '6-string' | '7-string'): Tuning[] {
   return STANDARD_TUNINGS.filter(tuning => tuning.guitarType === guitarType);
+}
+
+// Get available chord type categories
+export function getChordTypeCategories() {
+  return [
+    { id: 'triad', name: 'Triads', description: 'Basic 3-note chords' },
+    { id: '7th', name: '7th Chords', description: 'Chords with 7th extensions' },
+    { id: '9th', name: '9th Chords', description: 'Chords with 9th extensions' },
+    { id: '11th', name: '11th Chords', description: 'Chords with 11th extensions' },
+    { id: '13th', name: '13th Chords', description: 'Chords with 13th extensions' }
+  ];
 }

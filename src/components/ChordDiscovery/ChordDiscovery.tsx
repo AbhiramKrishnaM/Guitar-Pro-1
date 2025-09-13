@@ -1,15 +1,21 @@
-import React from 'react';
 import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
-import { generateDiatonicChords } from '../../lib/musicTheory';
+import { generateDiatonicChords, getChordTypeCategories } from '../../lib/musicTheory';
 
 export function ChordDiscovery() {
   const { state, dispatch } = useGuitar();
   
-  // Generate diatonic chords based on current key and mode
-  const diatonicChords = generateDiatonicChords(state.key, state.mode);
+  // Generate diatonic chords based on current key and mode and selected chord types
+  const diatonicChords = generateDiatonicChords(state.key, state.mode, state.chordTypeFilter);
   
   const handleChordClick = (chord: any) => {
     dispatch(guitarActions.setSelectedChord(chord));
+  };
+
+  const handleChordTypeToggle = (chordType: string) => {
+    const newFilter = state.chordTypeFilter.includes(chordType)
+      ? state.chordTypeFilter.filter(type => type !== chordType)
+      : [...state.chordTypeFilter, chordType];
+    dispatch(guitarActions.setChordTypeFilter(newFilter));
   };
 
   const getChordQualityColor = (chordType: string) => {
@@ -52,6 +58,27 @@ export function ChordDiscovery() {
         <p className="text-sm text-gray-600">
           Click on any chord to see its voicings and play it on the fretboard
         </p>
+      </div>
+
+      {/* Chord Type Selection */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 text-gray-700">Chord Types</h3>
+        <div className="flex flex-wrap gap-2">
+          {getChordTypeCategories().map(category => (
+            <button
+              key={category.id}
+              onClick={() => handleChordTypeToggle(category.id)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                state.chordTypeFilter.includes(category.id)
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+              title={category.description}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">

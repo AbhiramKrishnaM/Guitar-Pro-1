@@ -54,4 +54,6 @@ export interface GuitarSettings {
   mode: string;
   selectedChord?: Chord;
   selectedVoicing?: ChordVoicing;
+  chordTypeFilter: string[]; // e.g., ['triad', '7th', '9th'] to show which chord types
+  voicingFlexibility: 'strict' | 'flexible' | 'all'; // How many chord notes must be present
 }

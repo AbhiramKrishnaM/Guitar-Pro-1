@@ -11,8 +11,8 @@ export function ChordPalette() {
   // Memoize voicings calculation to prevent unnecessary recalculations
   const chordVoicings = useMemo(() => {
     if (!state.selectedChord) return [];
-    return findChordVoicings(state.selectedChord, state.tuning);
-  }, [state.selectedChord, state.tuning]);
+    return findChordVoicings(state.selectedChord, state.tuning, 24, state.voicingFlexibility);
+  }, [state.selectedChord, state.tuning, state.voicingFlexibility]);
 
   // Find voicings when selected chord changes
   useEffect(() => {
@@ -60,6 +60,10 @@ export function ChordPalette() {
     }
   }, [state.selectedVoicing, dispatch]);
 
+  const handleFlexibilityChange = useCallback((flexibility: 'strict' | 'flexible' | 'all') => {
+    dispatch(guitarActions.setVoicingFlexibility(flexibility));
+  }, [dispatch]);
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
@@ -84,9 +88,36 @@ export function ChordPalette() {
 
   return (
     <div className="chord-palette bg-white p-6 rounded-lg shadow-lg border">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">
-        {state.selectedChord.symbol} Voicings
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {state.selectedChord.symbol} Voicings
+        </h2>
+        
+        {/* Voicing Flexibility Controls */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Voicing Type:</span>
+          <div className="flex gap-1">
+            {(['strict', 'flexible', 'all'] as const).map(flexibility => (
+              <button
+                key={flexibility}
+                onClick={() => handleFlexibilityChange(flexibility)}
+                className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
+                  state.voicingFlexibility === flexibility
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+                title={
+                  flexibility === 'strict' ? 'Show only complete chord voicings' :
+                  flexibility === 'flexible' ? 'Show voicings with at least 3 notes including root' :
+                  'Show all possible note combinations'
+                }
+              >
+                {flexibility}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {voicings.length === 0 ? (
         <p className="text-gray-600">No voicings found for this chord in the current tuning</p>

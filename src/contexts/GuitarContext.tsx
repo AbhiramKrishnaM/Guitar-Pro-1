@@ -11,6 +11,8 @@ type GuitarAction =
   | { type: 'SET_MODE'; payload: string }
   | { type: 'SET_SELECTED_CHORD'; payload: Chord | undefined }
   | { type: 'SET_SELECTED_VOICING'; payload: ChordVoicing | undefined }
+  | { type: 'SET_CHORD_TYPE_FILTER'; payload: string[] }
+  | { type: 'SET_VOICING_FLEXIBILITY'; payload: 'strict' | 'flexible' | 'all' }
   | { type: 'ADD_CHORD_TO_PROGRESSION'; payload: ChordVoicing }
   | { type: 'REMOVE_CHORD_FROM_PROGRESSION'; payload: number }
   | { type: 'CLEAR_PROGRESSION' }
@@ -24,6 +26,8 @@ const initialState: GuitarSettings & { progression: ChordVoicing[] } = {
   mode: getAllModes()[0], // Ionian
   selectedChord: undefined,
   selectedVoicing: undefined,
+  chordTypeFilter: ['triad'], // Start with triads only
+  voicingFlexibility: 'strict', // Start with strict voicings
   progression: []
 };
 
@@ -70,6 +74,18 @@ function guitarReducer(
       return {
         ...state,
         selectedVoicing: action.payload
+      };
+    
+    case 'SET_CHORD_TYPE_FILTER':
+      return {
+        ...state,
+        chordTypeFilter: action.payload
+      };
+    
+    case 'SET_VOICING_FLEXIBILITY':
+      return {
+        ...state,
+        voicingFlexibility: action.payload
       };
     
     case 'ADD_CHORD_TO_PROGRESSION':
@@ -156,6 +172,16 @@ export const guitarActions = {
   setSelectedVoicing: (voicing: ChordVoicing | undefined) => ({
     type: 'SET_SELECTED_VOICING' as const,
     payload: voicing
+  }),
+  
+  setChordTypeFilter: (filter: string[]) => ({
+    type: 'SET_CHORD_TYPE_FILTER' as const,
+    payload: filter
+  }),
+  
+  setVoicingFlexibility: (flexibility: 'strict' | 'flexible' | 'all') => ({
+    type: 'SET_VOICING_FLEXIBILITY' as const,
+    payload: flexibility
   }),
   
   addChordToProgression: (voicing: ChordVoicing) => ({
