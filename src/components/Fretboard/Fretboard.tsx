@@ -51,7 +51,7 @@ export function Fretboard({
       >
         {/* Strings */}
         {tuning.strings.map((_, stringIndex) => {
-          const y = stringIndex * stringSpacing + 20;
+          const y = (stringCount - 1 - stringIndex) * stringSpacing + 20;
           return (
             <line
               key={stringIndex}
@@ -144,7 +144,7 @@ export function Fretboard({
           const x = position.fret === 0 
             ? headstockWidth + nutWidth / 2 
             : fretPositions[position.fret] - (fretPositions[position.fret] - fretPositions[position.fret - 1]) / 2;
-          const y = position.string * stringSpacing + 20;
+          const y = (stringCount - 1 - position.string) * stringSpacing + 20;
           
           return (
             <g key={index}>
@@ -176,7 +176,7 @@ export function Fretboard({
 
         {/* Clickable fret areas */}
         {tuning.strings.map((_, stringIndex) => {
-          const y = stringIndex * stringSpacing + 20;
+          const y = (stringCount - 1 - stringIndex) * stringSpacing + 20;
           return (
             <g key={`clickable-${stringIndex}`}>
               {fretPositions.map((x, fretIndex) => (
@@ -217,7 +217,7 @@ export function Fretboard({
           <text
             key={`label-${stringIndex}`}
             x={10}
-            y={stringIndex * stringSpacing + 25}
+            y={(stringCount - 1 - stringIndex) * stringSpacing + 25}
             fontSize="12"
             fill="#333"
             fontWeight="bold"
