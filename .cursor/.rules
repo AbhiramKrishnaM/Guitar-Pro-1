@@ -52,3 +52,6 @@ globs:
 * **Tuning Management**: Custom tunings should be stored in the browser's **`localStorage`**. Create a custom React hook (e.g., `useTunings.ts`) to manage the state and persistence of these tunings.
 * **Routing**: Use **React Router's `BrowserRouter`** and define a route like `/admin/tunings` that is not linked from the main UI but is still accessible.
 * **Component Usage**: When generating code for UI elements, prioritize the use of imported **`shadcn/ui`** components from the `@/components/ui` alias.
+* **Loaders**: For any loading state in the UI, use the dedicated loader component located at `components/Loader`.
+
+
