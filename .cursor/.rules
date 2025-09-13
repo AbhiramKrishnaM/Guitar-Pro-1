@@ -1,0 +1,54 @@
+---
+description: Global rules and conventions for the Guitar Chord & Progression Creator project. This project uses Vite, React, TypeScript, and Tailwind CSS.
+globs:
+  - "**/*.{ts,tsx}"
+---
+
+# Project Architecture & Conventions
+
+* **Technology Stack**: The project uses **Vite** for the build tool, **React** for the UI library, and **TypeScript** for static typing.
+* **Styling**: All styling should be done using **Tailwind CSS**. Prefer using utility classes directly in components. Avoid creating custom CSS files unless absolutely necessary for complex, custom animations or styling not achievable with Tailwind.
+* **Component Library**: Use **shadcn/ui** components for pre-built UI elements. When generating new components, check if a suitable shadcn component exists first.
+* **State Management**: Use **React Hooks** for state management (`useState`, `useReducer`, `useContext`). Avoid complex, external state management libraries like Redux unless the project's scale demands it.
+* **Routing**: The application uses **React Router DOM** for routing. Even though it's a single-page application, use a routing structure to create a hidden route for the admin/tuning management page.
+* **Project Structure**: Follow a feature-based project structure. Components related to a specific feature should be grouped in a single directory. For example:
+    
+    ```
+    src/
+    ├── components/
+    │   ├── ui/      // Shadcn/ui components
+    │   ├── Fretboard/
+    │   │   ├── index.tsx
+    │   │   └── Fretboard.tsx
+    │   └── TuningSelector/
+    │       └── TuningSelector.tsx
+    ├── features/
+    │   ├── progression-creator/
+    │   │   ├── ProgressionCreator.tsx
+    │   │   └── hooks/
+    │   │       └── useProgression.ts
+    │   └── tuning-management/ // Hidden route
+    │       ├── pages/
+    │       │   └── TuningEditorPage.tsx
+    │       └── components/
+    │           └── TuningForm.tsx
+    ├── pages/
+    │   ├── HomePage.tsx
+    │   └── ...
+    ├── App.tsx
+    └── main.tsx
+    ```
+* **TypeScript**: Use **TypeScript** for all new files. Components should be properly typed, including props and state. Avoid using `any` and prefer specific types or interfaces.
+* **Code Style**: Adhere to clean, readable code. Use **ESLint** and **Prettier** for code formatting.
+
+---
+
+### Specific Rules for AI Interactions
+
+* **Always read and adhere to the project description file**, located at `@PROJECT_SPEC.md`, for high-level requirements.
+* When asked to create a new component, **default to using functional components with hooks**.
+* **Always import and use utility classes** from Tailwind CSS for styling. Never add inline `style` objects.
+* When implementing drag-and-drop functionality, consider libraries like `react-dnd` or `dnd-kit` as they are widely used and well-documented.
+* For the tuning management feature, remember that custom tunings should be stored in the browser's **`localStorage`**. Create a custom React hook (e.g., `useTunings.ts`) to manage the state and persistence of these tunings.
+* For the hidden routes, use **React Router's `BrowserRouter`** and define a route like `/admin/tunings` that is not linked from the main UI but is still accessible.
+* When generating code for shadcn/ui components, make sure to import them correctly from the `@/components/ui` alias.
