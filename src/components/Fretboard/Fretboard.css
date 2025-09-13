@@ -73,6 +73,15 @@
   dominant-baseline: middle;
 }
 
+.fret-number {
+  font-family: 'Arial', sans-serif;
+  font-weight: normal;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: #666;
+  font-size: 8px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .fretboard-svg {
@@ -85,5 +94,9 @@
   
   .string-label {
     font-size: 10px;
+  }
+  
+  .fret-number {
+    font-size: 6px;
   }
 }

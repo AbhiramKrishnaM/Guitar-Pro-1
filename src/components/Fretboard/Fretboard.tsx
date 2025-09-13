@@ -22,14 +22,20 @@ export function Fretboard({
   
   // Calculate responsive width - use container width or minimum width
   const minWidth = headstockWidth + nutWidth + (fretCount * 30); // 30px per fret for better visibility
-  const totalWidth = Math.max(minWidth, 1200); // At least 1200px wide for 24 frets
+  const endPadding = 20; // Add padding at the end to prevent cropping
+  const totalWidth = Math.max(minWidth, 1200) + endPadding; // At least 1200px wide for 24 frets + padding
   const totalHeight = (stringCount - 1) * stringSpacing + 40;
 
   // Calculate fret positions (they get closer together as you go up the neck)
   const fretPositions = [0]; // Nut position
+  const playableWidth = totalWidth - headstockWidth - nutWidth - endPadding;
+  
+  // Calculate fret positions using the 12th root of 2 formula
+  // Scale the formula so that the 24th fret reaches exactly the end (before padding)
+  const scaleFactor = playableWidth / (1 - Math.pow(2, -fretCount/12));
+  
   for (let i = 1; i <= fretCount; i++) {
-    // Using the 12th root of 2 formula for accurate fret spacing
-    const fretPosition = (totalWidth - headstockWidth - nutWidth) * (1 - Math.pow(2, -i/12)) + headstockWidth + nutWidth;
+    const fretPosition = scaleFactor * (1 - Math.pow(2, -i/12)) + headstockWidth + nutWidth;
     fretPositions.push(fretPosition);
   }
 
@@ -189,6 +195,22 @@ export function Fretboard({
             </g>
           );
         })}
+
+        {/* Fret numbers */}
+        {fretPositions.map((x, fretIndex) => (
+          <text
+            key={`fret-number-${fretIndex}`}
+            x={x}
+            y={5}
+            fontSize="8"
+            fill="#666"
+            fontWeight="normal"
+            textAnchor="middle"
+            className="fret-number"
+          >
+            {fretIndex}
+          </text>
+        ))}
 
         {/* String labels (open notes) */}
         {tuning.strings.map((note, stringIndex) => (
