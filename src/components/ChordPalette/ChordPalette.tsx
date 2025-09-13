@@ -17,12 +17,14 @@ export function ChordPalette() {
   // Find voicings when selected chord changes
   useEffect(() => {
     if (state.selectedChord) {
-      setVoicings(chordVoicings);
+      // Filter out hard voicings as they're physically impossible to play
+      const playableVoicings = chordVoicings.filter(voicing => voicing.difficulty !== 'hard');
+      setVoicings(playableVoicings);
       setCurrentVoicingIndex(0);
       
       // Auto-select first voicing
-      if (chordVoicings.length > 0) {
-        dispatch(guitarActions.setSelectedVoicing(chordVoicings[0]));
+      if (playableVoicings.length > 0) {
+        dispatch(guitarActions.setSelectedVoicing(playableVoicings[0]));
       }
     } else {
       setVoicings([]);

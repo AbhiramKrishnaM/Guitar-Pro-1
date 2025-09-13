@@ -281,10 +281,17 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
         const maxFret = Math.max(...frets);
         const fretSpan = maxFret - minFret;
         
+        // Skip voicings that are physically impossible to play
+        // Maximum realistic fret span for guitar is 4 frets
+        if (fretSpan > 4) {
+          return;
+        }
+        
+        // More realistic difficulty assessment for guitar playability
         let difficulty: 'easy' | 'medium' | 'hard';
-        if (fretSpan <= 3) {
+        if (fretSpan <= 2) {
           difficulty = 'easy';
-        } else if (fretSpan <= 5) {
+        } else if (fretSpan <= 4) {
           difficulty = 'medium';
         } else {
           difficulty = 'hard';
