@@ -11,8 +11,8 @@ export function ChordPalette() {
   // Memoize voicings calculation to prevent unnecessary recalculations
   const chordVoicings = useMemo(() => {
     if (!state.selectedChord) return [];
-    return findChordVoicings(state.selectedChord, state.tuning, 24, state.voicingFlexibility);
-  }, [state.selectedChord, state.tuning, state.voicingFlexibility]);
+    return findChordVoicings(state.selectedChord, state.tuning, 24, state.voicingFlexibility, state.rootPosition);
+  }, [state.selectedChord, state.tuning, state.voicingFlexibility, state.rootPosition]);
 
   // Find voicings when selected chord changes
   useEffect(() => {
@@ -66,6 +66,10 @@ export function ChordPalette() {
     dispatch(guitarActions.setVoicingFlexibility(flexibility));
   }, [dispatch]);
 
+  const handleRootPositionModeToggle = useCallback(() => {
+    dispatch(guitarActions.setRootPositionMode(!state.rootPositionMode));
+  }, [dispatch, state.rootPositionMode]);
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
@@ -95,34 +99,73 @@ export function ChordPalette() {
           {state.selectedChord.symbol} Voicings
         </h2>
         
-        {/* Voicing Flexibility Controls */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Voicing Type:</span>
-          <div className="flex gap-1">
-            {(['strict', 'flexible', 'all'] as const).map(flexibility => (
-              <button
-                key={flexibility}
-                onClick={() => handleFlexibilityChange(flexibility)}
-                className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
-                  state.voicingFlexibility === flexibility
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-                title={
-                  flexibility === 'strict' ? 'Show only complete chord voicings' :
-                  flexibility === 'flexible' ? 'Show voicings with at least 3 notes including root' :
-                  'Show all possible note combinations'
-                }
-              >
-                {flexibility}
-              </button>
-            ))}
+        {/* Controls */}
+        <div className="flex items-center gap-4">
+          {/* Root Position Mode Toggle */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Root Position Mode:</span>
+            <button
+              onClick={handleRootPositionModeToggle}
+              className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
+                state.rootPositionMode
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+              title="Click on fretboard to select root note position"
+            >
+              {state.rootPositionMode ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          
+          {/* Voicing Flexibility Controls */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Voicing Type:</span>
+            <div className="flex gap-1">
+              {(['strict', 'flexible', 'all'] as const).map(flexibility => (
+                <button
+                  key={flexibility}
+                  onClick={() => handleFlexibilityChange(flexibility)}
+                  className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
+                    state.voicingFlexibility === flexibility
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                  title={
+                    flexibility === 'strict' ? 'Show only complete chord voicings' :
+                    flexibility === 'flexible' ? 'Show voicings with at least 3 notes including root' :
+                    'Show all possible note combinations'
+                  }
+                >
+                  {flexibility}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Root Position Mode Instructions */}
+      {state.rootPositionMode && (
+        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <p className="text-sm text-orange-800">
+            <strong>Root Position Mode:</strong> Click on any orange circle on the fretboard to select a root note position. 
+            Voicings will be generated based on your selected position.
+            {state.rootPosition && (
+              <span className="ml-2">
+                Selected: {state.rootPosition.note.name} at string {state.rootPosition.string + 1}, fret {state.rootPosition.fret}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
+
       {voicings.length === 0 ? (
-        <p className="text-gray-600">No voicings found for this chord in the current tuning</p>
+        <p className="text-gray-600">
+          {state.rootPositionMode && state.rootPosition 
+            ? `No voicings found for this chord with root at string ${state.rootPosition.string + 1}, fret ${state.rootPosition.fret}`
+            : 'No voicings found for this chord in the current tuning'
+          }
+        </p>
       ) : (
         <>
           {/* Voicing Navigation */}

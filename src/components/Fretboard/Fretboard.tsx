@@ -1,17 +1,26 @@
-import type { Tuning, FretPosition } from '../../types/music';
+import type { Tuning, FretPosition, Chord } from '../../types/music';
+import { findNotePositions } from '../../lib/musicTheory';
 import './Fretboard.css';
 
 interface FretboardProps {
   tuning: Tuning;
   selectedVoicing?: FretPosition[];
+  selectedChord?: Chord;
+  rootPositionMode?: boolean;
+  selectedRootPosition?: FretPosition;
   onFretClick?: (stringIndex: number, fret: number) => void;
+  onRootPositionClick?: (position: FretPosition) => void;
   className?: string;
 }
 
 export function Fretboard({ 
   tuning, 
   selectedVoicing = [], 
+  selectedChord,
+  rootPositionMode = false,
+  selectedRootPosition,
   onFretClick,
+  onRootPositionClick,
   className = '' 
 }: FretboardProps) {
   const stringCount = tuning.strings.length;
@@ -38,6 +47,11 @@ export function Fretboard({
     const fretPosition = scaleFactor * (1 - Math.pow(2, -i/12)) + headstockWidth + nutWidth;
     fretPositions.push(fretPosition);
   }
+
+  // Find root note positions if in root position mode and chord is selected
+  const rootPositions = rootPositionMode && selectedChord 
+    ? findNotePositions(selectedChord.root, tuning, fretCount)
+    : [];
 
 
   return (
@@ -139,6 +153,84 @@ export function Fretboard({
           );
         })}
 
+        {/* Clickable fret areas - only when not in root position mode */}
+        {!rootPositionMode && tuning.strings.map((_, stringIndex) => {
+          const y = (stringCount - 1 - stringIndex) * stringSpacing + 20;
+          return (
+            <g key={`clickable-${stringIndex}`}>
+              {fretPositions.map((x, fretIndex) => (
+                <rect
+                  key={`${stringIndex}-${fretIndex}`}
+                  x={fretIndex === 0 ? headstockWidth : fretPositions[fretIndex - 1]}
+                  y={y - 15}
+                  width={fretIndex === 0 ? nutWidth : x - fretPositions[fretIndex - 1]}
+                  height={30}
+                  fill="transparent"
+                  className="fret-clickable"
+                  onClick={() => onFretClick?.(stringIndex, fretIndex)}
+                  style={{ cursor: 'pointer' }}
+                />
+              ))}
+            </g>
+          );
+        })}
+
+        {/* Root note positions (when in root position mode) - rendered after clickable areas */}
+        {rootPositionMode && rootPositions.map((position, index) => {
+          const x = position.fret === 0 
+            ? headstockWidth + nutWidth / 2 
+            : fretPositions[position.fret] - (fretPositions[position.fret] - fretPositions[position.fret - 1]) / 2;
+          const y = (stringCount - 1 - position.string) * stringSpacing + 20;
+          const isSelected = selectedRootPosition && 
+            selectedRootPosition.string === position.string && 
+            selectedRootPosition.fret === position.fret;
+          
+          return (
+            <g key={`root-${index}`}>
+              {/* Invisible larger clickable area */}
+              <circle
+                cx={x}
+                cy={y}
+                r={12}
+                fill="transparent"
+                style={{ 
+                  cursor: 'pointer',
+                  pointerEvents: 'all'
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRootPositionClick?.(position);
+                }}
+              />
+              {/* Root position circle */}
+              <circle
+                cx={x}
+                cy={y}
+                r={isSelected ? 10 : 6}
+                fill={isSelected ? "#EF4444" : "#F59E0B"}
+                stroke={isSelected ? "#DC2626" : "#D97706"}
+                strokeWidth={isSelected ? 3 : 2}
+                className={`root-position ${isSelected ? 'selected' : ''}`}
+                style={{ 
+                  pointerEvents: 'none'
+                }}
+              />
+              {/* Note name */}
+              <text
+                x={x}
+                y={y + (isSelected ? 4 : 3)}
+                textAnchor="middle"
+                fontSize={isSelected ? "11" : "9"}
+                fill="white"
+                fontWeight="bold"
+                className="root-note-label"
+              >
+                {position.note.name}
+              </text>
+            </g>
+          );
+        })}
+
         {/* Selected chord positions */}
         {selectedVoicing.map((position, index) => {
           const x = position.fret === 0 
@@ -170,28 +262,6 @@ export function Fretboard({
               >
                 {position.note.name}
               </text>
-            </g>
-          );
-        })}
-
-        {/* Clickable fret areas */}
-        {tuning.strings.map((_, stringIndex) => {
-          const y = (stringCount - 1 - stringIndex) * stringSpacing + 20;
-          return (
-            <g key={`clickable-${stringIndex}`}>
-              {fretPositions.map((x, fretIndex) => (
-                <rect
-                  key={`${stringIndex}-${fretIndex}`}
-                  x={fretIndex === 0 ? headstockWidth : fretPositions[fretIndex - 1]}
-                  y={y - 15}
-                  width={fretIndex === 0 ? nutWidth : x - fretPositions[fretIndex - 1]}
-                  height={30}
-                  fill="transparent"
-                  className="fret-clickable"
-                  onClick={() => onFretClick?.(stringIndex, fretIndex)}
-                  style={{ cursor: 'pointer' }}
-                />
-              ))}
             </g>
           );
         })}

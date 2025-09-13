@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
-import type { GuitarSettings, Chord, ChordVoicing, ChordProgression, Tuning } from '../types/music';
+import type { GuitarSettings, Chord, ChordVoicing, ChordProgression, Tuning, FretPosition } from '../types/music';
 import { STANDARD_TUNINGS, getAllKeys, getAllModes } from '../lib/musicTheory';
 
 // Action types
@@ -13,13 +13,15 @@ type GuitarAction =
   | { type: 'SET_SELECTED_VOICING'; payload: ChordVoicing | undefined }
   | { type: 'SET_CHORD_TYPE_FILTER'; payload: string[] }
   | { type: 'SET_VOICING_FLEXIBILITY'; payload: 'strict' | 'flexible' | 'all' }
+  | { type: 'SET_ROOT_POSITION'; payload: FretPosition | undefined }
+  | { type: 'SET_ROOT_POSITION_MODE'; payload: boolean }
   | { type: 'ADD_CHORD_TO_PROGRESSION'; payload: ChordVoicing }
   | { type: 'REMOVE_CHORD_FROM_PROGRESSION'; payload: number }
   | { type: 'CLEAR_PROGRESSION' }
   | { type: 'SAVE_PROGRESSION'; payload: ChordProgression };
 
 // Initial state
-const initialState: GuitarSettings & { progression: ChordVoicing[] } = {
+const initialState: GuitarSettings & { progression: ChordVoicing[]; rootPosition?: FretPosition; rootPositionMode: boolean } = {
   guitarType: '6-string',
   tuning: STANDARD_TUNINGS[0], // E Standard
   key: getAllKeys()[0], // C
@@ -28,6 +30,8 @@ const initialState: GuitarSettings & { progression: ChordVoicing[] } = {
   selectedVoicing: undefined,
   chordTypeFilter: ['triad'], // Start with triads only
   voicingFlexibility: 'strict', // Start with strict voicings
+  rootPosition: undefined,
+  rootPositionMode: false,
   progression: []
 };
 
@@ -86,6 +90,19 @@ function guitarReducer(
       return {
         ...state,
         voicingFlexibility: action.payload
+      };
+    
+    case 'SET_ROOT_POSITION':
+      return {
+        ...state,
+        rootPosition: action.payload
+      };
+    
+    case 'SET_ROOT_POSITION_MODE':
+      return {
+        ...state,
+        rootPositionMode: action.payload,
+        rootPosition: action.payload ? state.rootPosition : undefined
       };
     
     case 'ADD_CHORD_TO_PROGRESSION':
@@ -182,6 +199,16 @@ export const guitarActions = {
   setVoicingFlexibility: (flexibility: 'strict' | 'flexible' | 'all') => ({
     type: 'SET_VOICING_FLEXIBILITY' as const,
     payload: flexibility
+  }),
+  
+  setRootPosition: (position: FretPosition | undefined) => ({
+    type: 'SET_ROOT_POSITION' as const,
+    payload: position
+  }),
+  
+  setRootPositionMode: (enabled: boolean) => ({
+    type: 'SET_ROOT_POSITION_MODE' as const,
+    payload: enabled
   }),
   
   addChordToProgression: (voicing: ChordVoicing) => ({

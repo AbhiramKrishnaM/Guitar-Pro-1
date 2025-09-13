@@ -32,6 +32,9 @@ export const CHORD_TYPES = {
   'dom9': [0, 4, 7, 10, 2],
   'maj11': [0, 4, 7, 11, 2, 5],
   'min11': [0, 3, 7, 10, 2, 5],
+  'dom11': [0, 4, 7, 10, 2, 5],
+  'maj13': [0, 4, 7, 11, 2, 5, 9],
+  'min13': [0, 3, 7, 10, 2, 5, 9],
   'dom13': [0, 4, 7, 10, 2, 5, 9]
 };
 
@@ -193,6 +196,24 @@ export function generateDiatonicChords(key: Note, mode: string, chordTypes: stri
         } else {
           chordSymbol = 'maj9'; // fallback
         }
+      } else if (chordType === '11th') {
+        // 11th chords (simplified - using 7th chord types with 11th extensions)
+        if (rootToThird === 4 && rootToFifth === 7) {
+          chordSymbol = rootToSeventh === 11 ? 'maj11' : 'dom11';
+        } else if (rootToThird === 3 && rootToFifth === 7) {
+          chordSymbol = 'min11';
+        } else {
+          chordSymbol = 'maj11'; // fallback
+        }
+      } else if (chordType === '13th') {
+        // 13th chords (simplified - using 7th chord types with 13th extensions)
+        if (rootToThird === 4 && rootToFifth === 7) {
+          chordSymbol = rootToSeventh === 11 ? 'maj13' : 'dom13';
+        } else if (rootToThird === 3 && rootToFifth === 7) {
+          chordSymbol = 'min13';
+        } else {
+          chordSymbol = 'maj13'; // fallback
+        }
       } else {
         continue; // Skip unknown chord types
       }
@@ -210,8 +231,29 @@ export function getNoteAtFret(tuning: Tuning, stringIndex: number, fret: number)
   return addSemitones(openStringNote, fret);
 }
 
+// Find all positions of a specific note on the fretboard
+export function findNotePositions(note: Note, tuning: Tuning, maxFret: number = 24): FretPosition[] {
+  const positions: FretPosition[] = [];
+  const stringCount = tuning.strings.length;
+  
+  for (let stringIndex = 0; stringIndex < stringCount; stringIndex++) {
+    for (let fret = 0; fret <= maxFret; fret++) {
+      const fretNote = getNoteAtFret(tuning, stringIndex, fret);
+      if (fretNote.semitone === note.semitone) {
+        positions.push({
+          string: stringIndex,
+          fret,
+          note: fretNote
+        });
+      }
+    }
+  }
+  
+  return positions;
+}
+
 // Find chord voicings on fretboard
-export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number = 24, flexibility: 'strict' | 'flexible' | 'all' = 'strict'): ChordVoicing[] {
+export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number = 24, flexibility: 'strict' | 'flexible' | 'all' = 'strict', rootPosition?: FretPosition): ChordVoicing[] {
   const voicings: ChordVoicing[] = [];
   const stringCount = tuning.strings.length;
   const maxVoicings = 50; // Limit to prevent performance issues
@@ -236,6 +278,11 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
         });
       }
     }
+  }
+  
+  // If root position is specified, filter root note positions to only include the specified position
+  if (rootPosition) {
+    chordNotePositions[chord.root.semitone] = [rootPosition];
   }
   
   // Generate voicings by selecting one position for each chord note

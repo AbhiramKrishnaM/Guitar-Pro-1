@@ -41,12 +41,11 @@
   fill: #4F46E5;
   stroke: #312E81;
   stroke-width: 2;
-  transition: all 0.2s ease;
+  transition: fill 0.2s ease;
 }
 
 .finger-position:hover {
   fill: #6366F1;
-  transform: scale(1.1);
 }
 
 .note-label {
@@ -64,6 +63,27 @@
 
 .fret-clickable:hover {
   background-color: rgba(79, 70, 229, 0.1);
+}
+
+.root-position {
+  transition: fill 0.2s ease, stroke 0.2s ease;
+  pointer-events: all;
+}
+
+.root-position:not(.selected):hover {
+  filter: brightness(1.1);
+}
+
+.root-position.selected {
+  pointer-events: none;
+}
+
+.root-note-label {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
 }
 
 .string-label {

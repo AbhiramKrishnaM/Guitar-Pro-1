@@ -1,6 +1,6 @@
-import React from 'react';
 import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
 import { getTuningsForGuitarType, getAllKeys, getAllModes } from '../../lib/musicTheory';
+import { Tooltip, InfoIcon } from '../Tooltip/Tooltip';
 
 export function GuitarControls() {
   const { state, dispatch } = useGuitar();
@@ -30,7 +30,27 @@ export function GuitarControls() {
 
   return (
     <div className="guitar-controls bg-white p-6 rounded-lg shadow-lg border">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Guitar Settings</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Guitar Settings</h2>
+        <Tooltip
+          content={
+            <div className="space-y-1">
+              <div className="font-medium text-white mb-2">Current Settings</div>
+              <div className="text-sm">
+                <div><span className="font-medium">Guitar:</span> {state.guitarType}</div>
+                <div><span className="font-medium">Tuning:</span> {state.tuning.name}</div>
+                <div><span className="font-medium">Key:</span> {state.key.name} {state.mode}</div>
+                {state.selectedChord && (
+                  <div><span className="font-medium">Selected Chord:</span> {state.selectedChord.symbol}</div>
+                )}
+              </div>
+            </div>
+          }
+          position="bottom"
+        >
+          <InfoIcon className="w-6 h-6" />
+        </Tooltip>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Guitar Type Selection */}
@@ -114,19 +134,6 @@ export function GuitarControls() {
               </option>
             ))}
           </select>
-        </div>
-      </div>
-
-      {/* Current Settings Display */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-md">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Current Settings</h3>
-        <div className="text-sm text-gray-600">
-          <p><span className="font-medium">Guitar:</span> {state.guitarType}</p>
-          <p><span className="font-medium">Tuning:</span> {state.tuning.name}</p>
-          <p><span className="font-medium">Key:</span> {state.key.name} {state.mode}</p>
-          {state.selectedChord && (
-            <p><span className="font-medium">Selected Chord:</span> {state.selectedChord.symbol}</p>
-          )}
         </div>
       </div>
     </div>
