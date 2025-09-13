@@ -71,7 +71,8 @@ function guitarReducer(
       return {
         ...state,
         selectedChord: action.payload,
-        selectedVoicing: undefined // Reset voicing when chord changes
+        selectedVoicing: undefined, // Reset voicing when chord changes
+        rootPosition: undefined // Reset root position when chord changes
       };
     
     case 'SET_SELECTED_VOICING':

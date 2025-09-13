@@ -6,3 +6,4 @@ export { ChordDiscovery } from './ChordDiscovery/ChordDiscovery';
 export { ChordPalette } from './ChordPalette/ChordPalette';
 export { ProgressionCreator } from './ProgressionCreator/ProgressionCreator';
 export { Tooltip, InfoIcon } from './Tooltip/Tooltip';
+export { FloatingNavbar } from './FloatingNavbar/FloatingNavbar';

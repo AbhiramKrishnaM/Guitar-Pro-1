@@ -319,7 +319,16 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
       
       if (meetsRequirements) {
         // Calculate inversion (which chord note is in the bass)
-        const bassNote = currentPositions[0].note;
+        // Find the bass note by comparing string positions (higher string = lower pitch)
+        const sortedPositions = [...currentPositions].sort((a, b) => {
+          // Sort by string (higher string number = lower pitch), then by fret
+          if (a.string !== b.string) {
+            return b.string - a.string; // Higher string number first (bass strings)
+          }
+          return a.fret - b.fret; // Lower fret first for same string
+        });
+        
+        const bassNote = sortedPositions[0].note;
         const bassChordIndex = chord.notes.findIndex(note => note.semitone === bassNote.semitone);
         
         // Determine difficulty based on fret span and finger stretch

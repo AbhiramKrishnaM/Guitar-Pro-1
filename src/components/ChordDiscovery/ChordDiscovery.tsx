@@ -11,11 +11,9 @@ export function ChordDiscovery() {
     dispatch(guitarActions.setSelectedChord(chord));
   };
 
-  const handleChordTypeToggle = (chordType: string) => {
-    const newFilter = state.chordTypeFilter.includes(chordType)
-      ? state.chordTypeFilter.filter(type => type !== chordType)
-      : [...state.chordTypeFilter, chordType];
-    dispatch(guitarActions.setChordTypeFilter(newFilter));
+  const handleChordTypeSelect = (chordType: string) => {
+    // Single selection only - replace the entire filter with the selected type
+    dispatch(guitarActions.setChordTypeFilter([chordType]));
   };
 
   const getChordQualityColor = (chordType: string) => {
@@ -67,7 +65,7 @@ export function ChordDiscovery() {
           {getChordTypeCategories().map(category => (
             <button
               key={category.id}
-              onClick={() => handleChordTypeToggle(category.id)}
+              onClick={() => handleChordTypeSelect(category.id)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 state.chordTypeFilter.includes(category.id)
                   ? 'bg-blue-600 text-white shadow-md'
@@ -81,6 +79,7 @@ export function ChordDiscovery() {
         </div>
       </div>
 
+      {/* Chords Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
         {diatonicChords.map((chord, index) => (
           <button

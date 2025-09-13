@@ -69,7 +69,7 @@ function DroppableArea({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[120px] border-2 border-dashed rounded-lg p-4 transition-colors ${
+      className={`min-h-[60px] border-2 border-dashed rounded-lg p-3 transition-colors ${
         isOver 
           ? 'border-blue-400 bg-blue-100' 
           : 'border-gray-300 bg-gray-50'
@@ -125,8 +125,8 @@ export function ProgressionCreator() {
   };
 
   return (
-    <div className="progression-creator bg-white p-6 rounded-lg shadow-lg border">
-      <div className="flex items-center justify-between mb-4">
+    <div className="progression-creator bg-white p-4 rounded-lg shadow-lg border">
+      <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl font-bold text-gray-800">Chord Progression</h2>
         <div className="flex space-x-2">
           <button
@@ -149,8 +149,8 @@ export function ProgressionCreator() {
       <DndContext onDragEnd={handleDragEnd}>
         <DroppableArea>
           {state.progression.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <p className="text-lg mb-2">No chords in progression</p>
+            <div className="text-center text-gray-500 py-4">
+              <p className="text-base mb-1">No chords in progression</p>
               <p className="text-sm">Add chords from the chord palette above</p>
             </div>
           ) : (
@@ -174,8 +174,8 @@ export function ProgressionCreator() {
 
       {/* Progression Info */}
       {state.progression.length > 0 && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-sm font-medium text-blue-800 mb-2">Progression Info</h3>
+        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="text-sm font-medium text-blue-800 mb-1">Progression Info</h3>
           <div className="text-sm text-blue-700">
             <p><span className="font-medium">Key:</span> {state.key.name} {state.mode}</p>
             <p><span className="font-medium">Chords:</span> {state.progression.length}</p>

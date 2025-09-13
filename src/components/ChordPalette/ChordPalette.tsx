@@ -2,8 +2,14 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
 import { findChordVoicings } from '../../lib/musicTheory';
 import type { ChordVoicing } from '../../types/music';
+import { ArrowLeft } from 'lucide-react';
 
-export function ChordPalette() {
+interface ChordPaletteProps {
+  onBackToChords?: () => void;
+  showBackButton?: boolean;
+}
+
+export function ChordPalette({ onBackToChords, showBackButton = false }: ChordPaletteProps = {}) {
   const { state, dispatch } = useGuitar();
   const [voicings, setVoicings] = useState<ChordVoicing[]>([]);
   const [currentVoicingIndex, setCurrentVoicingIndex] = useState(0);
@@ -95,9 +101,21 @@ export function ChordPalette() {
   return (
     <div className="chord-palette bg-white p-6 rounded-lg shadow-lg border">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">
-          {state.selectedChord.symbol} Voicings
-        </h2>
+        <div className="flex items-center gap-3">
+          {/* {showBackButton && onBackToChords && (
+            <button
+              onClick={onBackToChords}
+              className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              title="Back to chord selection"
+            >
+              <ArrowLeft size={16} />
+              Back to Chords
+            </button>
+          )} */}
+          <h2 className="text-2xl font-bold text-gray-800">
+            {state.selectedChord.symbol} Voicings
+          </h2>
+        </div>
         
         {/* Controls */}
         <div className="flex items-center gap-4">
@@ -208,12 +226,22 @@ export function ChordPalette() {
                 <p><span className="font-medium">Positions:</span> {state.selectedVoicing.positions.map(pos => `${pos.note.name} (${pos.string + 1}/${pos.fret})`).join(', ')}</p>
               </div>
 
-              <button
-                onClick={handleAddToProgression}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Add to Progression
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddToProgression}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Add to Progression
+                </button>
+                {showBackButton && onBackToChords && (
+                  <button
+                    onClick={onBackToChords}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Try Another Chord
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
