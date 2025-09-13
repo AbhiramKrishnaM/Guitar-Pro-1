@@ -1,0 +1,89 @@
+.fretboard-container {
+  overflow-x: auto;
+  padding: 1rem 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.fretboard-svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 1000px;
+  height: auto;
+}
+
+.string {
+  stroke: #333;
+  stroke-width: 1.5;
+}
+
+.string:first-child,
+.string:last-child {
+  stroke-width: 2;
+}
+
+.fret {
+  stroke: #666;
+  stroke-width: 1;
+}
+
+.fret:first-child {
+  stroke: #8B4513;
+  stroke-width: 4;
+}
+
+.fret-marker {
+  fill: #666;
+}
+
+.finger-position {
+  fill: #4F46E5;
+  stroke: #312E81;
+  stroke-width: 2;
+  transition: all 0.2s ease;
+}
+
+.finger-position:hover {
+  fill: #6366F1;
+  transform: scale(1.1);
+}
+
+.note-label {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.fret-clickable {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.fret-clickable:hover {
+  background-color: rgba(79, 70, 229, 0.1);
+}
+
+.string-label {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .fretboard-svg {
+    min-width: 400px;
+  }
+  
+  .note-label {
+    font-size: 8px;
+  }
+  
+  .string-label {
+    font-size: 10px;
+  }
+}
