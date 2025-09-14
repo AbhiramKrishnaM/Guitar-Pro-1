@@ -97,7 +97,8 @@ export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
           </button>
 
           {/* Chord Explorer Button */}
-          <button
+          {/* dont remove this  */}
+          {/* <button
             onClick={toggleExplorer}
             className={`w-12 h-12 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center ${
               isExplorerOpen
@@ -107,7 +108,7 @@ export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
             title="Chord Explorer - Browse chords and voicings"
           >
             <Layers size={20} />
-          </button>
+          </button> */}
 
           {/* Chords Button */}
           {/* <button
