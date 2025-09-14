@@ -18,6 +18,7 @@ type GuitarAction =
   | { type: 'ADD_CHORD_TO_PROGRESSION'; payload: ChordVoicing }
   | { type: 'REMOVE_CHORD_FROM_PROGRESSION'; payload: number }
   | { type: 'CLEAR_PROGRESSION' }
+  | { type: 'LOAD_PROGRESSION'; payload: ChordVoicing[] }
   | { type: 'SAVE_PROGRESSION'; payload: ChordProgression }
   | { type: 'SHOW_NOTIFICATION'; payload: { message: string; type: 'success' | 'error' | 'info' } }
   | { type: 'HIDE_NOTIFICATION' };
@@ -144,6 +145,16 @@ function guitarReducer(
         progression: []
       };
     
+    case 'LOAD_PROGRESSION':
+      return {
+        ...state,
+        progression: action.payload,
+        notification: {
+          message: `Loaded progression with ${action.payload.length} chords`,
+          type: 'success'
+        }
+      };
+    
     case 'SAVE_PROGRESSION':
       // This would typically save to localStorage or a backend
       console.log('Saving progression:', action.payload);
@@ -263,6 +274,11 @@ export const guitarActions = {
   clearProgression: () => ({
     type: 'CLEAR_PROGRESSION' as const,
     payload: null
+  }),
+  
+  loadProgression: (voicings: ChordVoicing[]) => ({
+    type: 'LOAD_PROGRESSION' as const,
+    payload: voicings
   }),
   
   saveProgression: (progression: ChordProgression) => ({

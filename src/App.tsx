@@ -5,6 +5,7 @@ import { RightFloatingNavbar } from './components/RightFloatingNavbar/RightFloat
 import { Notification } from './components/Notification/Notification';
 import { Home } from './pages/Home';
 import { ProgressionLibraryPage } from './pages/ProgressionLibraryPage';
+import { ProgressionDetailPage } from './pages/ProgressionDetailPage';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
               } 
             />
             <Route path="/progressions" element={<ProgressionLibraryPage />} />
+            <Route path="/progressions/:id" element={<ProgressionDetailPage />} />
           </Routes>
           
           {/* Notification */}

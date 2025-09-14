@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Music, Guitar, Zap } from 'lucide-react';
 import { ALL_PROGRESSIONS, getProgressionsByGenre, searchProgressions } from '../../lib/progressionLibrary';
 import type { ProgressionData } from '../../lib/progressionLibrary';
@@ -13,10 +14,10 @@ type DifficultyType = 'all' | 'beginner' | 'intermediate' | 'advanced';
 
 export function ProgressionLibrary({ className = '' }: ProgressionLibraryProps) {
   // const { state } = useGuitar(); // Available for future chord selection integration
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<FilterType>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyType>('all');
-  const [selectedProgression, setSelectedProgression] = useState<ProgressionData | null>(null);
 
   // Filter progressions based on search and filters
   const filteredProgressions = useMemo(() => {
@@ -41,7 +42,7 @@ export function ProgressionLibrary({ className = '' }: ProgressionLibraryProps) 
   }, [searchQuery, selectedGenre, selectedDifficulty]);
 
   const handleProgressionClick = (progression: ProgressionData) => {
-    setSelectedProgression(progression);
+    navigate(`/progressions/${progression.id}`);
   };
 
   const handleChordClick = (chordSymbol: string) => {
@@ -206,85 +207,6 @@ export function ProgressionLibrary({ className = '' }: ProgressionLibraryProps) 
         </div>
       )}
 
-      {/* Selected Progression Detail */}
-      {selectedProgression && (
-        <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-          {/* Progression Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-2">Key & Mode</h3>
-              <p className="text-gray-600">
-                {selectedProgression.key.name} {selectedProgression.mode}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-2">Difficulty</h3>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(selectedProgression.difficulty)}`}>
-                {selectedProgression.difficulty}
-              </span>
-            </div>
-          </div>
-
-          {/* Chord Progression */}
-          <div className="mb-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Chord Progression</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {selectedProgression.chords.map((chord, index) => (
-                <div key={index} className="text-center">
-                  <div className="bg-blue-100 rounded-lg p-4 mb-2">
-                    <div className="text-lg font-bold text-blue-800">
-                      {chord.symbol}
-                    </div>
-                    <div className="text-sm text-blue-600">
-                      {chord.roman}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bands */}
-          <div className="mb-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Featured Bands</h3>
-            <div className="flex flex-wrap gap-2">
-              {selectedProgression.bands.map((band, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm"
-                >
-                  {band}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div>
-            <h3 className="font-semibold text-gray-800 mb-3">Tags</h3>
-            <div className="flex flex-wrap gap-2">
-              {selectedProgression.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Close Button */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setSelectedProgression(null)}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Close Details
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

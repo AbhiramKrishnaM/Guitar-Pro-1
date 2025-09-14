@@ -43,25 +43,24 @@ export function FretboardContainer() {
     }
   }, [scaleChords, state.selectedChord, dispatch]);
 
+  // Auto-select first chord from loaded progression when progression changes
+  useEffect(() => {
+    if (state.progression.length > 0 && state.progression[0]?.chord) {
+      // Find the chord in the current scale chords that matches the first chord in the progression
+      const firstProgressionChord = state.progression[0].chord;
+      const matchingChord = scaleChords.find(c => c.symbol === firstProgressionChord.symbol);
+      
+      if (matchingChord && (!state.selectedChord || state.selectedChord.symbol !== matchingChord.symbol)) {
+        dispatch(guitarActions.setSelectedChord(matchingChord));
+      }
+    }
+  }, [state.progression, scaleChords, state.selectedChord, dispatch]);
+
   // Find voicings when selected chord changes
   useEffect(() => {
     if (state.selectedChord) {
-      console.log('=== CHORD VOICING DEBUG ===');
-      console.log('Selected chord:', state.selectedChord.symbol);
-      console.log('Chord notes:', state.selectedChord.notes.map(n => n.name));
-      console.log('Total voicings generated:', chordVoicings.length);
-      
       // Show all voicings for now to debug the new algorithm
       const playableVoicings = chordVoicings;
-      console.log('All voicings (no filtering):', playableVoicings.length);
-      
-      if (playableVoicings.length > 0) {
-        console.log('First playable voicing:', playableVoicings[0]);
-        console.log('First voicing positions:', playableVoicings[0].positions);
-      } else {
-        console.log('No playable voicings found!');
-      }
-      
       setVoicings(playableVoicings);
       voicingsRef.current = playableVoicings;
       setCurrentVoicingIndex(0);
@@ -82,7 +81,6 @@ export function FretboardContainer() {
   useEffect(() => {
     if (voicingsRef.current.length > 0 && currentVoicingIndex < voicingsRef.current.length) {
       const selectedVoicing = voicingsRef.current[currentVoicingIndex];
-      console.log('Setting selected voicing:', selectedVoicing.positions);
       dispatch(guitarActions.setSelectedVoicing(selectedVoicing));
     }
   }, [currentVoicingIndex, dispatch]);
@@ -339,10 +337,6 @@ export function FretboardContainer() {
       
       <div className="w-full">
         {(() => {
-          console.log('=== FRETBOARD RENDER DEBUG ===');
-          console.log('selectedVoicing:', state.selectedVoicing);
-          console.log('selectedVoicing positions:', state.selectedVoicing?.positions || []);
-          console.log('selectedChord:', state.selectedChord?.symbol);
           return null;
         })()}
         <Fretboard 

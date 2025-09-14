@@ -1,0 +1,1 @@
+export { ProgressionDetail } from './ProgressionDetail';

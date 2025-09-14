@@ -596,10 +596,12 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
       const noteImportance = (note: Note) => {
         const interval = (note.semitone - chord.root.semitone + 12) % 12;
         if (interval === 3 || interval === 4) return 1; // 3rd
-        if (interval === 7) return 2; // 5th
-        if (interval === 10 || interval === 11) return 3; // 7th
-        if (interval === 2 || interval === 5 || interval === 9) return 4; // 9th, 11th, 13th
-        return 5; // other extensions
+        if (interval === 10 || interval === 11) return 2; // 7th
+        if (interval === 7) return 3; // 5th
+        if (interval === 2) return 4; // 9th
+        if (interval === 5) return 5; // 11th
+        if (interval === 9) return 6; // 13th
+        return 7; // other extensions
       };
       
       remainingNotes.sort((a, b) => noteImportance(a) - noteImportance(b));
@@ -654,16 +656,37 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
         }
       }
       
-      // If we have at least 3 notes and all chord notes are represented, create a voicing
+      // If we have at least 3 notes, create a voicing
       if (currentPositions.length >= 3) {
         // Check if we have all required chord notes
         const uniqueNotes = new Set(currentPositions.map(pos => pos.note.semitone));
         const chordNoteSemitones = new Set(chord.notes.map(note => note.semitone));
-        const hasAllChordNotes = Array.from(chordNoteSemitones).every(semitone => 
-          uniqueNotes.has(semitone)
-        );
         
-        if (hasAllChordNotes) {
+        // For extended chords (13th chords have 7 notes), be more flexible
+        // We need at least the root, 3rd, and 7th for a valid chord
+        const isExtendedChord = chord.notes.length > 5; // 13th chords have 7 notes
+        let hasValidChordNotes = false;
+        
+        if (isExtendedChord) {
+          // For extended chords, require root, 3rd, and 7th at minimum
+          const hasRoot = uniqueNotes.has(chord.root.semitone);
+          const hasThird = chord.notes.some(note => {
+            const interval = (note.semitone - chord.root.semitone + 12) % 12;
+            return uniqueNotes.has(note.semitone) && (interval === 3 || interval === 4);
+          });
+          const hasSeventh = chord.notes.some(note => {
+            const interval = (note.semitone - chord.root.semitone + 12) % 12;
+            return uniqueNotes.has(note.semitone) && (interval === 10 || interval === 11);
+          });
+          hasValidChordNotes = hasRoot && hasThird && hasSeventh;
+        } else {
+          // For regular chords, require all notes
+          hasValidChordNotes = Array.from(chordNoteSemitones).every(semitone => 
+            uniqueNotes.has(semitone)
+          );
+        }
+        
+        if (hasValidChordNotes) {
           // Calculate inversion
           const sortedPositions = [...currentPositions].sort((a, b) => {
             if (a.string !== b.string) {
@@ -726,12 +749,30 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
           const uniqueNotes = new Set(current.map(pos => pos.note.semitone));
           const chordNoteSemitones = new Set(chord.notes.map(note => note.semitone));
           
-          // Check if this voicing contains all required chord notes
-          const hasAllChordNotes = Array.from(chordNoteSemitones).every(semitone => 
-            uniqueNotes.has(semitone)
-          );
+          // Check if this voicing contains valid chord notes
+          const isExtendedChord = chord.notes.length > 5; // 13th chords have 7 notes
+          let hasValidChordNotes = false;
           
-          if (uniqueNotes.size >= 3 && hasAllChordNotes) {
+          if (isExtendedChord) {
+            // For extended chords, require root, 3rd, and 7th at minimum
+            const hasRoot = uniqueNotes.has(chord.root.semitone);
+            const hasThird = chord.notes.some(note => {
+              const interval = (note.semitone - chord.root.semitone + 12) % 12;
+              return uniqueNotes.has(note.semitone) && (interval === 3 || interval === 4);
+            });
+            const hasSeventh = chord.notes.some(note => {
+              const interval = (note.semitone - chord.root.semitone + 12) % 12;
+              return uniqueNotes.has(note.semitone) && (interval === 10 || interval === 11);
+            });
+            hasValidChordNotes = hasRoot && hasThird && hasSeventh;
+          } else {
+            // For regular chords, require all notes
+            hasValidChordNotes = Array.from(chordNoteSemitones).every(semitone => 
+              uniqueNotes.has(semitone)
+            );
+          }
+          
+          if (uniqueNotes.size >= 3 && hasValidChordNotes) {
             // Calculate inversion
             const sortedPositions = [...current].sort((a, b) => {
               if (a.string !== b.string) {

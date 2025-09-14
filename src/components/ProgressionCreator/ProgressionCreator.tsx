@@ -117,8 +117,6 @@ export function ProgressionCreator() {
       const [removed] = newProgression.splice(activeIndex, 1);
       newProgression.splice(overIndex, 0, removed);
       
-      // Note: We'd need to implement a reorder action in the context
-      console.log('Reordered progression:', newProgression);
     }
   };
 

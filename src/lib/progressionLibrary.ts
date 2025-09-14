@@ -164,6 +164,23 @@ export const MATH_ROCK_PROGRESSIONS: ProgressionData[] = [
     bands: ['CHON', 'Standards', 'Covet'],
     difficulty: 'intermediate',
     tags: ['modal-interchange', 'maj7', 'smooth-voice-leading']
+  },
+  {
+    id: 'math-rock-5',
+    name: 'Extended Jazz Harmony',
+    genre: 'math-rock',
+    description: 'Complex 13th chords for advanced jazz-influenced math rock',
+    key: NOTES[7], // G
+    mode: 'Dorian',
+    chords: [
+      { symbol: 'Gmaj13', root: NOTES[7], type: 'maj13', roman: 'Imaj13' },
+      { symbol: 'Em13', root: NOTES[4], type: 'min13', roman: 'vim13' },
+      { symbol: 'Am13', root: NOTES[9], type: 'min13', roman: 'iim13' },
+      { symbol: 'D13', root: NOTES[2], type: 'dom13', roman: 'V13' }
+    ],
+    bands: ['CHON', 'Standards', 'Covet'],
+    difficulty: 'advanced',
+    tags: ['13th-chords', 'jazz-influence', 'extended-harmony']
   }
 ];
 
