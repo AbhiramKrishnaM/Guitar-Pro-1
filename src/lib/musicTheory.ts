@@ -527,10 +527,10 @@ export function findNotePositions(note: Note, tuning: Tuning, maxFret: number = 
 }
 
 // Find chord voicings on fretboard
-export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number = 24, flexibility: 'strict' | 'flexible' | 'all' = 'strict', rootPosition?: FretPosition): ChordVoicing[] {
+export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number = 24, _flexibility: 'strict' | 'flexible' | 'all' = 'strict', rootPosition?: FretPosition): ChordVoicing[] {
   const voicings: ChordVoicing[] = [];
   const stringCount = tuning.strings.length;
-  const maxVoicings = 50; // Limit to prevent performance issues
+  const maxVoicings = 50;
   
   // Create a map of chord note semitones for quick lookup
   const chordNoteSemitones = new Set(chord.notes.map(note => note.semitone));
@@ -554,127 +554,235 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
     }
   }
   
+  // Sort positions for each note to prioritize lower frets and better string positions
+  for (const semitone in chordNotePositions) {
+    chordNotePositions[semitone].sort((a, b) => {
+      // Prioritize lower frets
+      if (a.fret !== b.fret) return a.fret - b.fret;
+      // For same fret, prioritize higher string (lower pitch)
+      return b.string - a.string;
+    });
+  }
+  
   // If root position is specified, filter root note positions to only include the specified position
   if (rootPosition) {
     chordNotePositions[chord.root.semitone] = [rootPosition];
   }
   
-  // Generate voicings by selecting one position for each chord note
-  function generateVoicings(
-    chordNotes: Note[],
-    currentPositions: FretPosition[],
-    usedStrings: Set<number>
-  ): void {
-    if (voicings.length >= maxVoicings) return; // Early exit if we have enough voicings
+  // Generate playable chord voicings with improved algorithm
+  function generatePlayableVoicings(): void {
+    // Try different starting positions to find the best voicings
+    const rootPositions = chordNotePositions[chord.root.semitone] || [];
     
-    if (currentPositions.length >= 2) { // At least 2 notes for a partial chord
-      // Check voicing requirements based on flexibility
-      let meetsRequirements = false;
+    for (const rootPos of rootPositions) {
+      // Start with root note
+      const usedStrings = new Set([rootPos.string]);
+      const currentPositions = [rootPos];
       
-      if (flexibility === 'strict') {
-        // Must have all chord notes
-        meetsRequirements = chord.notes.every(chordNote => 
-          currentPositions.some(pos => pos.note.semitone === chordNote.semitone)
-        );
-      } else if (flexibility === 'flexible') {
-        // Must have at least 3 notes, including root and one other chord tone
-        const hasRoot = currentPositions.some(pos => pos.note.semitone === chord.root.semitone);
-        const hasOtherChordTone = chord.notes.some(chordNote => 
-          chordNote.semitone !== chord.root.semitone && 
-          currentPositions.some(pos => pos.note.semitone === chordNote.semitone)
-        );
-        meetsRequirements = currentPositions.length >= 3 && hasRoot && hasOtherChordTone;
-      } else if (flexibility === 'all') {
-        // Any combination of chord notes (at least 2)
-        meetsRequirements = currentPositions.some(pos => 
-          chord.notes.some(chordNote => pos.note.semitone === chordNote.semitone)
-        );
-      }
+      // Try to add other chord notes in order of importance
+      const remainingNotes = chord.notes.filter(note => note.semitone !== chord.root.semitone);
       
-      if (meetsRequirements) {
-        // Calculate inversion (which chord note is in the bass)
-        // Find the bass note by comparing string positions (higher string = lower pitch)
-        const sortedPositions = [...currentPositions].sort((a, b) => {
-          // Sort by string (higher string number = lower pitch), then by fret
-          if (a.string !== b.string) {
-            return b.string - a.string; // Higher string number first (bass strings)
+      // Sort remaining notes by importance (3rd, 7th, 5th, then extensions)
+      const noteImportance = (note: Note) => {
+        const interval = (note.semitone - chord.root.semitone + 12) % 12;
+        if (interval === 3 || interval === 4) return 1; // 3rd
+        if (interval === 7) return 2; // 5th
+        if (interval === 10 || interval === 11) return 3; // 7th
+        if (interval === 2 || interval === 5 || interval === 9) return 4; // 9th, 11th, 13th
+        return 5; // other extensions
+      };
+      
+      remainingNotes.sort((a, b) => noteImportance(a) - noteImportance(b));
+      
+      // Try to add notes one by one, ensuring playability
+      for (const note of remainingNotes) {
+        const positions = chordNotePositions[note.semitone] || [];
+        
+        // Find the best position for this note that maintains playability
+        let bestPosition: FretPosition | null = null;
+        let bestScore = -1;
+        
+        for (const pos of positions) {
+          if (usedStrings.has(pos.string)) continue;
+          
+          // Calculate playability score
+          const testPositions = [...currentPositions, pos];
+          const frets = testPositions.map(p => p.fret);
+          const minFret = Math.min(...frets);
+          const maxFret = Math.max(...frets);
+          const fretSpan = maxFret - minFret;
+          
+          // Skip if fret span is too large (more than 3 semitones for playability)
+          if (fretSpan > 3) continue;
+          
+          // Calculate score based on fret span and string distribution
+          let score = 0;
+          
+          // Prefer smaller fret spans
+          score += (4 - fretSpan) * 10;
+          
+          // Prefer using different strings
+          score += (6 - usedStrings.size) * 5;
+          
+          // Prefer lower frets
+          score += (24 - pos.fret) * 2;
+          
+          // Prefer positions that create good voice leading
+          const avgFret = frets.reduce((sum, f) => sum + f, 0) / frets.length;
+          const fretDistance = Math.abs(pos.fret - avgFret);
+          score += (3 - fretDistance) * 3;
+          
+          if (score > bestScore) {
+            bestScore = score;
+            bestPosition = pos;
           }
-          return a.fret - b.fret; // Lower fret first for same string
-        });
-        
-        const bassNote = sortedPositions[0].note;
-        const bassChordIndex = chord.notes.findIndex(note => note.semitone === bassNote.semitone);
-        
-        // Determine difficulty based on fret span and finger stretch
-        const frets = currentPositions.map(pos => pos.fret);
-        const minFret = Math.min(...frets);
-        const maxFret = Math.max(...frets);
-        const fretSpan = maxFret - minFret;
-        
-        // Skip voicings that are physically impossible to play
-        // Maximum realistic fret span for guitar is 4 frets
-        if (fretSpan > 4) {
-          return;
         }
         
-        // More realistic difficulty assessment for guitar playability
-        let difficulty: 'easy' | 'medium' | 'hard';
-        if (fretSpan <= 2) {
-          difficulty = 'easy';
-        } else if (fretSpan <= 4) {
-          difficulty = 'medium';
-        } else {
-          difficulty = 'hard';
+        if (bestPosition) {
+          currentPositions.push(bestPosition);
+          usedStrings.add(bestPosition.string);
         }
-        
-        voicings.push({
-          positions: [...currentPositions],
-          inversion: bassChordIndex,
-          difficulty,
-          chord: chord
-        });
       }
-    }
-    
-    // Try to add more chord notes
-    for (const chordNote of chordNotes) {
-      const positions = chordNotePositions[chordNote.semitone] || [];
       
-      for (const position of positions) {
-        // Skip if we already have a note on this string
-        if (usedStrings.has(position.string)) continue;
-        
-        // Skip if this would create too many positions
-        if (currentPositions.length >= 6) continue;
-        
-        generateVoicings(
-          chordNotes.filter(note => note.semitone !== chordNote.semitone),
-          [...currentPositions, position],
-          new Set([...usedStrings, position.string])
+      // If we have at least 3 notes and all chord notes are represented, create a voicing
+      if (currentPositions.length >= 3) {
+        // Check if we have all required chord notes
+        const uniqueNotes = new Set(currentPositions.map(pos => pos.note.semitone));
+        const chordNoteSemitones = new Set(chord.notes.map(note => note.semitone));
+        const hasAllChordNotes = Array.from(chordNoteSemitones).every(semitone => 
+          uniqueNotes.has(semitone)
         );
+        
+        if (hasAllChordNotes) {
+          // Calculate inversion
+          const sortedPositions = [...currentPositions].sort((a, b) => {
+            if (a.string !== b.string) {
+              return b.string - a.string; // Higher string number first (bass strings)
+            }
+            return a.fret - b.fret; // Lower fret first for same string
+          });
+          
+          const bassNote = sortedPositions[0].note;
+          const bassChordIndex = chord.notes.findIndex(note => note.semitone === bassNote.semitone);
+          
+          // Determine difficulty based on fret span
+          const frets = currentPositions.map(pos => pos.fret);
+          const minFret = Math.min(...frets);
+          const maxFret = Math.max(...frets);
+          const fretSpan = maxFret - minFret;
+          
+          let difficulty: 'easy' | 'medium' | 'hard';
+          if (fretSpan <= 1) {
+            difficulty = 'easy';
+          } else if (fretSpan <= 3) {
+            difficulty = 'medium';
+          } else {
+            difficulty = 'hard';
+          }
+          
+          voicings.push({
+            positions: [...currentPositions],
+            inversion: bassChordIndex,
+            difficulty,
+            chord: chord
+          });
+        }
       }
     }
   }
   
-  // Start generating voicings
-  generateVoicings(chord.notes, [], new Set());
+  // Generate voicings using the improved algorithm
+  generatePlayableVoicings();
   
-  // Sort by difficulty and remove duplicates
-  return voicings
-    .filter((voicing, index, self) => 
-      index === self.findIndex(v => 
-        v.positions.length === voicing.positions.length &&
-        v.positions.every((pos, i) => 
-          pos.string === voicing.positions[i].string && 
-          pos.fret === voicing.positions[i].fret
-        )
+  // If we don't have enough voicings, try with more flexible approach
+  if (voicings.length < 5) {
+    // Try generating voicings with more permissive rules
+    const allPositions: FretPosition[] = [];
+    for (const semitone in chordNotePositions) {
+      allPositions.push(...chordNotePositions[semitone]);
+    }
+    
+    // Generate combinations of positions
+    function generateCombinations(positions: FretPosition[], current: FretPosition[], startIndex: number): void {
+      if (current.length >= 3 && current.length <= 6) {
+        // Check if this combination is playable
+        const frets = current.map(pos => pos.fret);
+        const minFret = Math.min(...frets);
+        const maxFret = Math.max(...frets);
+        const fretSpan = maxFret - minFret;
+        
+        if (fretSpan <= 4) { // Allow up to 4 fret span for more options
+          // Check if we have different chord notes
+          const uniqueNotes = new Set(current.map(pos => pos.note.semitone));
+          const chordNoteSemitones = new Set(chord.notes.map(note => note.semitone));
+          
+          // Check if this voicing contains all required chord notes
+          const hasAllChordNotes = Array.from(chordNoteSemitones).every(semitone => 
+            uniqueNotes.has(semitone)
+          );
+          
+          if (uniqueNotes.size >= 3 && hasAllChordNotes) {
+            // Calculate inversion
+            const sortedPositions = [...current].sort((a, b) => {
+              if (a.string !== b.string) {
+                return b.string - a.string;
+              }
+              return a.fret - b.fret;
+            });
+            
+            const bassNote = sortedPositions[0].note;
+            const bassChordIndex = chord.notes.findIndex(note => note.semitone === bassNote.semitone);
+            
+            let difficulty: 'easy' | 'medium' | 'hard';
+            if (fretSpan <= 1) {
+              difficulty = 'easy';
+            } else if (fretSpan <= 3) {
+              difficulty = 'medium';
+            } else {
+              difficulty = 'hard';
+            }
+            
+            voicings.push({
+              positions: [...current],
+              inversion: bassChordIndex,
+              difficulty,
+              chord: chord
+            });
+          }
+        }
+      }
+      
+      if (current.length < 6 && voicings.length < maxVoicings) {
+        for (let i = startIndex; i < positions.length; i++) {
+          const pos = positions[i];
+          // Skip if we already have a note on this string
+          if (current.some(p => p.string === pos.string)) continue;
+          
+          generateCombinations(positions, [...current, pos], i + 1);
+        }
+      }
+    }
+    
+    generateCombinations(allPositions, [], 0);
+  }
+  
+  // Remove duplicates and sort by difficulty
+  const uniqueVoicings = voicings.filter((voicing, index, self) => 
+    index === self.findIndex(v => 
+      v.positions.length === voicing.positions.length &&
+      v.positions.every((pos, i) => 
+        pos.string === voicing.positions[i].string && 
+        pos.fret === voicing.positions[i].fret
       )
     )
+  );
+  
+  return uniqueVoicings
     .sort((a, b) => {
       const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
       return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
     })
-    .slice(0, maxVoicings); // Limit final results
+    .slice(0, maxVoicings);
 }
 
 // Get all available keys

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
 import { Fretboard } from './Fretboard';
 import { findChordVoicings, generateDiatonicChords, getChordTypeCategories } from '../../lib/musicTheory';
@@ -14,6 +14,7 @@ export function FretboardContainer() {
   const [currentChordIndex, setCurrentChordIndex] = useState(0);
   const [chordTypeCategories] = useState(getChordTypeCategories());
   const [currentChordTypeIndex, setCurrentChordTypeIndex] = useState(0);
+  const voicingsRef = useRef<ChordVoicing[]>([]);
 
   // Memoize scale chords calculation
   const scaleChordsMemo = useMemo(() => {
@@ -32,19 +33,37 @@ export function FretboardContainer() {
     setCurrentChordIndex(0);
   }, [scaleChordsMemo]);
 
-  // Auto-select first chord when scale changes and no chord is selected
+  // Auto-select first chord when scale changes and no chord is selected, or when chord type changes
   useEffect(() => {
-    if (scaleChords.length > 0 && !state.selectedChord) {
-      dispatch(guitarActions.setSelectedChord(scaleChords[0]));
+    if (scaleChords.length > 0) {
+      // If no chord is selected, or if the currently selected chord is not in the new scale chords, select the first one
+      if (!state.selectedChord || !scaleChords.find(c => c.symbol === state.selectedChord?.symbol)) {
+        dispatch(guitarActions.setSelectedChord(scaleChords[0]));
+      }
     }
   }, [scaleChords, state.selectedChord, dispatch]);
 
   // Find voicings when selected chord changes
   useEffect(() => {
     if (state.selectedChord) {
-      // Filter out hard voicings as they're physically impossible to play
-      const playableVoicings = chordVoicings.filter(voicing => voicing.difficulty !== 'hard');
+      console.log('=== CHORD VOICING DEBUG ===');
+      console.log('Selected chord:', state.selectedChord.symbol);
+      console.log('Chord notes:', state.selectedChord.notes.map(n => n.name));
+      console.log('Total voicings generated:', chordVoicings.length);
+      
+      // Show all voicings for now to debug the new algorithm
+      const playableVoicings = chordVoicings;
+      console.log('All voicings (no filtering):', playableVoicings.length);
+      
+      if (playableVoicings.length > 0) {
+        console.log('First playable voicing:', playableVoicings[0]);
+        console.log('First voicing positions:', playableVoicings[0].positions);
+      } else {
+        console.log('No playable voicings found!');
+      }
+      
       setVoicings(playableVoicings);
+      voicingsRef.current = playableVoicings;
       setCurrentVoicingIndex(0);
       
       // Auto-select first voicing
@@ -53,6 +72,7 @@ export function FretboardContainer() {
       }
     } else {
       setVoicings([]);
+      voicingsRef.current = [];
       setCurrentVoicingIndex(0);
       dispatch(guitarActions.setSelectedVoicing(undefined));
     }
@@ -60,10 +80,12 @@ export function FretboardContainer() {
 
   // Update selected voicing when index changes
   useEffect(() => {
-    if (voicings.length > 0 && currentVoicingIndex < voicings.length) {
-      dispatch(guitarActions.setSelectedVoicing(voicings[currentVoicingIndex]));
+    if (voicingsRef.current.length > 0 && currentVoicingIndex < voicingsRef.current.length) {
+      const selectedVoicing = voicingsRef.current[currentVoicingIndex];
+      console.log('Setting selected voicing:', selectedVoicing.positions);
+      dispatch(guitarActions.setSelectedVoicing(selectedVoicing));
     }
-  }, [currentVoicingIndex, voicings, dispatch]);
+  }, [currentVoicingIndex, dispatch]);
 
   // Sync current chord index when selected chord changes from external sources
   useEffect(() => {
@@ -152,10 +174,10 @@ export function FretboardContainer() {
   }, [currentVoicingIndex]);
 
   const handleNextVoicing = useCallback(() => {
-    if (currentVoicingIndex < voicings.length - 1) {
+    if (currentVoicingIndex < voicingsRef.current.length - 1) {
       setCurrentVoicingIndex(currentVoicingIndex + 1);
     }
-  }, [currentVoicingIndex, voicings.length]);
+  }, [currentVoicingIndex]);
 
   const handleSaveChord = useCallback(() => {
     if (state.selectedVoicing) {
@@ -288,12 +310,12 @@ export function FretboardContainer() {
                 </button>
                 
                 <span className="text-sm text-gray-600 font-medium">
-                  {currentVoicingIndex + 1} of {voicings.length}
+                  {currentVoicingIndex + 1} of {voicingsRef.current.length}
                 </span>
                 
                 <button
                   onClick={handleNextVoicing}
-                  disabled={currentVoicingIndex === voicings.length - 1}
+                  disabled={currentVoicingIndex === voicingsRef.current.length - 1}
                   className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   title="Next voicing"
                 >
@@ -316,6 +338,13 @@ export function FretboardContainer() {
       </div>
       
       <div className="w-full">
+        {(() => {
+          console.log('=== FRETBOARD RENDER DEBUG ===');
+          console.log('selectedVoicing:', state.selectedVoicing);
+          console.log('selectedVoicing positions:', state.selectedVoicing?.positions || []);
+          console.log('selectedChord:', state.selectedChord?.symbol);
+          return null;
+        })()}
         <Fretboard 
           tuning={state.tuning}
           selectedVoicing={state.selectedVoicing?.positions || []}
