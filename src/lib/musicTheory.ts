@@ -22,6 +22,9 @@ export const CHORD_TYPES = {
   'min': [0, 3, 7],
   'aug': [0, 4, 8],
   'dim': [0, 3, 6],
+  'sus2': [0, 2, 7],
+  'sus4': [0, 5, 7],
+  'add9': [0, 4, 7, 2],
   'maj7': [0, 4, 7, 11],
   'min7': [0, 3, 7, 10],
   'dom7': [0, 4, 7, 10],
@@ -450,6 +453,13 @@ export function generateDiatonicChords(key: Note, mode: string, chordTypes: stri
         } else {
           chordSymbol = 'maj'; // fallback
         }
+      } else if (chordType === 'sus') {
+        // Suspended and add chords - generate all three types for each degree
+        const sus2Chord = generateChord(root, 'sus2');
+        const sus4Chord = generateChord(root, 'sus4');
+        const add9Chord = generateChord(root, 'add9');
+        chords.push(sus2Chord, sus4Chord, add9Chord);
+        continue; // Skip the rest of the logic for this iteration
       } else if (chordType === '7th') {
         // 7th chords
         if (rootToThird === 4 && rootToFifth === 7) {
@@ -804,6 +814,7 @@ export function getTuningsForGuitarType(guitarType: '6-string' | '7-string'): Tu
 export function getChordTypeCategories() {
   return [
     { id: 'triad', name: 'Triads', description: 'Basic 3-note chords' },
+    { id: 'sus', name: 'Suspended & Add', description: 'Sus2, sus4, and add9 chords' },
     { id: '7th', name: '7th Chords', description: 'Chords with 7th extensions' },
     { id: '9th', name: '9th Chords', description: 'Chords with 9th extensions' },
     { id: '11th', name: '11th Chords', description: 'Chords with 11th extensions' },

@@ -26,6 +26,12 @@ export function ChordDiscovery() {
         return 'bg-red-100 text-red-800 border-red-200';
       case 'aug':
         return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'sus2':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'sus4':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'add9':
+        return 'bg-teal-100 text-teal-800 border-teal-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -41,6 +47,12 @@ export function ChordDiscovery() {
         return '°';
       case 'aug':
         return '+';
+      case 'sus2':
+        return 'sus2';
+      case 'sus4':
+        return 'sus4';
+      case 'add9':
+        return 'add9';
       default:
         return '';
     }
