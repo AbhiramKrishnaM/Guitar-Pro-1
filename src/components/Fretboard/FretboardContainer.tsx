@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
 import { Fretboard } from './Fretboard';
 import { findChordVoicings } from '../../lib/musicTheory';
+import { Switch } from '../ui/switch';
 import type { FretPosition, ChordVoicing } from '../../types/music';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -46,6 +47,10 @@ export function FretboardContainer() {
     dispatch(guitarActions.setRootPosition(position));
   };
 
+  const handleRootPositionToggle = () => {
+    dispatch(guitarActions.setRootPositionMode(!state.rootPositionMode));
+  };
+
   const handlePreviousVoicing = useCallback(() => {
     if (currentVoicingIndex > 0) {
       setCurrentVoicingIndex(currentVoicingIndex - 1);
@@ -63,45 +68,56 @@ export function FretboardContainer() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-gray-800">Fretboard</h2>
         
-        {/* Selected Chord Info and Navigation */}
-        {state.selectedChord && voicings.length > 0 && (
-          <div className="flex items-center gap-4">
-            {/* Selected Chord Information */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-              <div className="text-sm font-semibold text-blue-800">
-                {state.selectedChord.symbol}
-              </div>
-              <div className="text-xs text-blue-600">
-                {state.selectedChord.notes.map(note => note.name).join(', ')}
-              </div>
-            </div>
-            
-            {/* Voicing Navigation */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handlePreviousVoicing}
-                disabled={currentVoicingIndex === 0}
-                className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="Previous voicing"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              
-              <span className="text-sm text-gray-600 font-medium">
-                {currentVoicingIndex + 1} of {voicings.length}
-              </span>
-              
-              <button
-                onClick={handleNextVoicing}
-                disabled={currentVoicingIndex === voicings.length - 1}
-                className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="Next voicing"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
+        <div className="flex items-center gap-4">
+          {/* Root Position Toggle */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 font-medium">Root Position</span>
+            <Switch
+              checked={state.rootPositionMode}
+              onCheckedChange={handleRootPositionToggle}
+            />
           </div>
-        )}
+          
+          {/* Selected Chord Info and Navigation */}
+          {state.selectedChord && voicings.length > 0 && (
+            <div className="flex items-center gap-4">
+              {/* Selected Chord Information */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                <div className="text-sm font-semibold text-blue-800">
+                  {state.selectedChord.symbol}
+                </div>
+                <div className="text-xs text-blue-600">
+                  {state.selectedChord.notes.map(note => note.name).join(', ')}
+                </div>
+              </div>
+              
+              {/* Voicing Navigation */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handlePreviousVoicing}
+                  disabled={currentVoicingIndex === 0}
+                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Previous voicing"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                
+                <span className="text-sm text-gray-600 font-medium">
+                  {currentVoicingIndex + 1} of {voicings.length}
+                </span>
+                
+                <button
+                  onClick={handleNextVoicing}
+                  disabled={currentVoicingIndex === voicings.length - 1}
+                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Next voicing"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="w-full">

@@ -150,6 +150,7 @@ export function ProgressionCreator() {
     dispatch(guitarActions.saveProgression(progression));
   };
 
+
   return (
     <div className="progression-creator bg-white p-4 rounded-lg shadow-lg border">
       <div className="flex items-center justify-between mb-3">
