@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Music, Guitar, X, Layers } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Music, Guitar, X, Layers, BookOpen, Home } from 'lucide-react';
 import { ChordDiscovery } from '../ChordDiscovery/ChordDiscovery';
 import { ChordPalette } from '../ChordPalette/ChordPalette';
 import { useGuitar } from '../../contexts/GuitarContext';
@@ -8,12 +9,13 @@ interface FloatingNavbarProps {
   className?: string;
 }
 
-type TabType = 'chords' | 'voicings' | 'explorer';
+type TabType = 'chords' | 'voicings' | 'explorer' | 'library';
 
 export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
   const { state } = useGuitar();
-  const [isChordsOpen, setIsChordsOpen] = useState(false);
-  const [isVoicingsOpen, setIsVoicingsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [isExplorerOpen, setIsExplorerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('chords');
   const [lastSelectedChordId, setLastSelectedChordId] = useState<string | null>(null);
@@ -28,31 +30,38 @@ export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
     }
   }, [state.selectedChord, isExplorerOpen, activeTab, lastSelectedChordId]);
 
-  const toggleChords = () => {
-    setIsChordsOpen(!isChordsOpen);
-    if (isVoicingsOpen) setIsVoicingsOpen(false);
-    if (isExplorerOpen) setIsExplorerOpen(false);
-  };
+  // Unused functions - keeping for potential future use
+  // const toggleChords = () => {
+  //   setIsChordsOpen(!isChordsOpen);
+  //   if (isVoicingsOpen) setIsVoicingsOpen(false);
+  //   if (isExplorerOpen) setIsExplorerOpen(false);
+  //   if (isLibraryOpen) setIsLibraryOpen(false);
+  // };
 
-  const toggleVoicings = () => {
-    setIsVoicingsOpen(!isVoicingsOpen);
-    if (isChordsOpen) setIsChordsOpen(false);
-    if (isExplorerOpen) setIsExplorerOpen(false);
-  };
+  // const toggleVoicings = () => {
+  //   setIsVoicingsOpen(!isVoicingsOpen);
+  //   if (isChordsOpen) setIsChordsOpen(false);
+  //   if (isExplorerOpen) setIsExplorerOpen(false);
+  //   if (isLibraryOpen) setIsLibraryOpen(false);
+  // };
 
   const toggleExplorer = () => {
     setIsExplorerOpen(!isExplorerOpen);
-    if (isChordsOpen) setIsChordsOpen(false);
-    if (isVoicingsOpen) setIsVoicingsOpen(false);
     if (!isExplorerOpen) {
       setActiveTab('chords'); // Reset to chords tab when opening
       setLastSelectedChordId(null); // Reset chord tracking when opening
     }
   };
 
+  const navigateToHome = () => {
+    navigate('/');
+  };
+
+  const navigateToProgressions = () => {
+    navigate('/progressions');
+  };
+
   const closeOverlay = () => {
-    setIsChordsOpen(false);
-    setIsVoicingsOpen(false);
     setIsExplorerOpen(false);
   };
 
@@ -61,6 +70,32 @@ export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
       {/* Floating Navbar */}
       <div className={`fixed left-2 top-1/2 transform -translate-y-1/2 z-40 ${className}`}>
         <div className="flex flex-col space-y-3 ml-2">
+          {/* Home Button */}
+          <button
+            onClick={navigateToHome}
+            className={`w-12 h-12 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center ${
+              location.pathname === '/'
+                ? 'bg-blue-600 text-white scale-110'
+                : 'bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+            }`}
+            title="Home - Guitar Chord & Progression Creator"
+          >
+            <Home size={20} />
+          </button>
+
+          {/* Progression Library Button */}
+          <button
+            onClick={navigateToProgressions}
+            className={`w-12 h-12 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center ${
+              location.pathname === '/progressions'
+                ? 'bg-green-600 text-white scale-110'
+                : 'bg-white text-gray-700 hover:bg-green-50 hover:text-green-600'
+            }`}
+            title="Progression Library - Explore chord progressions from progressive metal and math rock"
+          >
+            <BookOpen size={20} />
+          </button>
+
           {/* Chord Explorer Button */}
           <button
             onClick={toggleExplorer}
@@ -102,53 +137,6 @@ export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
         </div>
       </div>
 
-      {/* Chords Overlay */}
-      {isChordsOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none">
-          {/* Overlay Content */}
-          <div className="relative bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden mb-8 pointer-events-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-bold text-gray-800">Chords in C Ionian</h2>
-              <button
-                onClick={closeOverlay}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            {/* Content */}
-            <div className="p-4 overflow-y-auto max-h-[calc(80vh-80px)]">
-              <ChordDiscovery />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Voicings Overlay */}
-      {isVoicingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none">
-          {/* Overlay Content */}
-          <div className="relative bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[80vh] overflow-hidden mb-8 pointer-events-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-bold text-gray-800">Chord Voicings</h2>
-              <button
-                onClick={closeOverlay}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            {/* Content */}
-            <div className="p-4 overflow-y-auto max-h-[calc(80vh-80px)]">
-              <ChordPalette />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Chord Explorer Overlay */}
       {isExplorerOpen && (
@@ -207,6 +195,7 @@ export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
           </div>
         </div>
       )}
+
     </>
   );
 }
