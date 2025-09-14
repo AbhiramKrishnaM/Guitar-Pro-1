@@ -1,7 +1,8 @@
 import { X, Music, Guitar, Zap } from 'lucide-react';
 import { loadProgressionAndNavigate } from '../../lib/progressionLoader';
-import { useGuitar } from '../../contexts/GuitarContext';
+import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
 import { useNavigate } from 'react-router-dom';
+import { createChordForFretboard } from '../../lib/musicTheory';
 import type { ProgressionData } from '../../lib/progressionLibrary';
 
 interface ProgressionModalProps {
@@ -30,6 +31,25 @@ export function ProgressionModal({ progression, isOpen, onClose }: ProgressionMo
       case 'progressive-metal': return <Zap className="w-5 h-5" />;
       case 'math-rock': return <Music className="w-5 h-5" />;
       default: return <Guitar className="w-5 h-5" />;
+    }
+  };
+
+  const handleChordClick = (chordSymbol: string, progression: ProgressionData) => {
+    try {
+      // Find the chord data from the progression
+      const chordData = progression.chords.find(c => c.symbol === chordSymbol);
+      if (!chordData) return;
+      
+      // Use the robust chord creation function
+      const { chord, voicings } = createChordForFretboard(chordData.root, chordData.type, state.tuning);
+      
+      // Set the selected chord and voicing
+      dispatch(guitarActions.setSelectedChord(chord));
+      if (voicings.length > 0) {
+        dispatch(guitarActions.setSelectedVoicing(voicings[0]));
+      }
+    } catch (error) {
+      console.error('Error selecting chord:', error);
     }
   };
 
@@ -97,7 +117,10 @@ export function ProgressionModal({ progression, isOpen, onClose }: ProgressionMo
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {progression.chords.map((chord, index) => (
                   <div key={index} className="text-center">
-                    <div className="bg-blue-100 rounded-xl p-6 mb-3 hover:bg-blue-200 transition-colors cursor-pointer">
+                    <div 
+                      className="bg-blue-100 rounded-xl p-6 mb-3 hover:bg-blue-200 transition-colors cursor-pointer"
+                      onClick={() => handleChordClick(chord.symbol, progression)}
+                    >
                       <div className="text-2xl font-bold text-blue-800 mb-1">
                         {chord.symbol}
                       </div>

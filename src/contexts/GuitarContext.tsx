@@ -19,6 +19,7 @@ type GuitarAction =
   | { type: 'REMOVE_CHORD_FROM_PROGRESSION'; payload: number }
   | { type: 'CLEAR_PROGRESSION' }
   | { type: 'LOAD_PROGRESSION'; payload: ChordVoicing[] }
+  | { type: 'LOAD_LIBRARY_PROGRESSION'; payload: ChordVoicing[] }
   | { type: 'SAVE_PROGRESSION'; payload: ChordProgression }
   | { type: 'SHOW_NOTIFICATION'; payload: { message: string; type: 'success' | 'error' | 'info' } }
   | { type: 'HIDE_NOTIFICATION' };
@@ -28,6 +29,7 @@ const initialState: GuitarSettings & {
   progression: ChordVoicing[]; 
   rootPosition?: FretPosition; 
   rootPositionMode: boolean;
+  isLibraryProgression: boolean; // Flag to indicate if progression is from library
   notification?: { message: string; type: 'success' | 'error' | 'info' };
 } = {
   guitarType: '6-string',
@@ -41,6 +43,7 @@ const initialState: GuitarSettings & {
   rootPosition: undefined,
   rootPositionMode: false,
   progression: [],
+  isLibraryProgression: false,
   notification: undefined
 };
 
@@ -77,6 +80,7 @@ function guitarReducer(
       };
     
     case 'SET_SELECTED_CHORD':
+     
       return {
         ...state,
         selectedChord: action.payload,
@@ -142,22 +146,34 @@ function guitarReducer(
     case 'CLEAR_PROGRESSION':
       return {
         ...state,
-        progression: []
+        progression: [],
+        isLibraryProgression: false
       };
     
     case 'LOAD_PROGRESSION':
       return {
         ...state,
         progression: action.payload,
+        isLibraryProgression: false,
         notification: {
           message: `Loaded progression with ${action.payload.length} chords`,
           type: 'success'
         }
       };
     
+    case 'LOAD_LIBRARY_PROGRESSION':
+      return {
+        ...state,
+        progression: action.payload,
+        isLibraryProgression: true,
+        notification: {
+          message: `Loaded library progression with ${action.payload.length} chords`,
+          type: 'success'
+        }
+      };
+    
     case 'SAVE_PROGRESSION':
       // This would typically save to localStorage or a backend
-      console.log('Saving progression:', action.payload);
       return {
         ...state,
         notification: {
@@ -278,6 +294,11 @@ export const guitarActions = {
   
   loadProgression: (voicings: ChordVoicing[]) => ({
     type: 'LOAD_PROGRESSION' as const,
+    payload: voicings
+  }),
+  
+  loadLibraryProgression: (voicings: ChordVoicing[]) => ({
+    type: 'LOAD_LIBRARY_PROGRESSION' as const,
     payload: voicings
   }),
   

@@ -35,32 +35,75 @@ export function FretboardContainer() {
 
   // Auto-select first chord when scale changes and no chord is selected, or when chord type changes
   useEffect(() => {
-    if (scaleChords.length > 0) {
+    // Only auto-select scale chords for manually created progressions
+    if (!state.isLibraryProgression && scaleChords.length > 0) {
       // If no chord is selected, or if the currently selected chord is not in the new scale chords, select the first one
       if (!state.selectedChord || !scaleChords.find(c => c.symbol === state.selectedChord?.symbol)) {
         dispatch(guitarActions.setSelectedChord(scaleChords[0]));
       }
     }
-  }, [scaleChords, state.selectedChord, dispatch]);
+  }, [scaleChords, state.selectedChord, state.isLibraryProgression, dispatch]);
 
   // Auto-select first chord from loaded progression when progression changes
   useEffect(() => {
     if (state.progression.length > 0 && state.progression[0]?.chord) {
-      // Find the chord in the current scale chords that matches the first chord in the progression
       const firstProgressionChord = state.progression[0].chord;
-      const matchingChord = scaleChords.find(c => c.symbol === firstProgressionChord.symbol);
       
-      if (matchingChord && (!state.selectedChord || state.selectedChord.symbol !== matchingChord.symbol)) {
-        dispatch(guitarActions.setSelectedChord(matchingChord));
+      if (state.isLibraryProgression) {
+        // For library progressions, only auto-select if no chord is currently selected
+        if (!state.selectedChord) {
+          dispatch(guitarActions.setSelectedChord(firstProgressionChord));
+        }
+      } else {
+        // For manually created progressions, find the chord in the current scale chords
+        const matchingChord = scaleChords.find(c => c.symbol === firstProgressionChord.symbol);
+        
+        if (matchingChord && (!state.selectedChord || state.selectedChord.symbol !== matchingChord.symbol)) {
+          dispatch(guitarActions.setSelectedChord(matchingChord));
+        }
       }
     }
-  }, [state.progression, scaleChords, state.selectedChord, dispatch]);
+  }, [state.progression, scaleChords, state.selectedChord, state.isLibraryProgression, dispatch]);
 
   // Find voicings when selected chord changes
   useEffect(() => {
+    
     if (state.selectedChord) {
-      // Show all voicings for now to debug the new algorithm
-      const playableVoicings = chordVoicings;
+      let playableVoicings: ChordVoicing[] = [];
+      
+      if (state.isLibraryProgression) {
+        
+        // For library progressions, use the pre-calculated voicings from the progression
+        const matchingProgressionVoicing = state.progression.find(
+          voicing => voicing.chord.symbol === state.selectedChord?.symbol
+        );     
+        
+        if (matchingProgressionVoicing) {
+          // Use the pre-calculated voicing and find similar ones
+          playableVoicings = [matchingProgressionVoicing];
+          
+          // Optionally, add more voicings by calculating them
+          const calculatedVoicings = chordVoicings.filter(
+            v => v.chord.symbol === state.selectedChord?.symbol
+          );
+          playableVoicings.push(...calculatedVoicings);
+          
+          // Remove duplicates based on voicing position similarity
+          playableVoicings = playableVoicings.filter((voicing, index, arr) => {
+            return index === 0 || !arr.slice(0, index).some(prevVoicing => {
+              return JSON.stringify(prevVoicing.positions) === JSON.stringify(voicing.positions);
+            });
+          });
+        } else {
+          // Fallback to calculated voicings if no match found
+          playableVoicings = chordVoicings;
+        }
+      } else {
+        // For manually created progressions, use calculated voicings
+        playableVoicings = chordVoicings;
+      }
+      
+      
       setVoicings(playableVoicings);
       voicingsRef.current = playableVoicings;
       setCurrentVoicingIndex(0);
@@ -68,14 +111,14 @@ export function FretboardContainer() {
       // Auto-select first voicing
       if (playableVoicings.length > 0) {
         dispatch(guitarActions.setSelectedVoicing(playableVoicings[0]));
-      }
+      } 
     } else {
       setVoicings([]);
       voicingsRef.current = [];
       setCurrentVoicingIndex(0);
       dispatch(guitarActions.setSelectedVoicing(undefined));
     }
-  }, [state.selectedChord, chordVoicings, dispatch]);
+  }, [state.selectedChord, chordVoicings, state.isLibraryProgression, state.progression, dispatch]);
 
   // Update selected voicing when index changes
   useEffect(() => {
@@ -189,8 +232,8 @@ export function FretboardContainer() {
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold text-gray-800">Fretboard</h2>
           
-          {/* Chord Selector */}
-          {scaleChords.length > 0 && (
+          {/* Chord Selector - Only show for manually created progressions */}
+          {!state.isLibraryProgression && scaleChords.length > 0 && (
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePreviousChord}
@@ -233,44 +276,58 @@ export function FretboardContainer() {
             </div>
           )}
           
-          {/* Chord Type Selector */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePreviousChordType}
-              disabled={currentChordTypeIndex === 0}
-              className="p-1.5 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              title="Previous chord type"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            
-            <select
-              value={state.chordTypeFilter[0] || ''}
-              onChange={(e) => {
-                handleChordTypeSelect(e.target.value);
-              }}
-              className="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium min-w-[140px]"
-            >
-              {chordTypeCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            
-            <button
-              onClick={handleNextChordType}
-              disabled={currentChordTypeIndex === chordTypeCategories.length - 1}
-              className="p-1.5 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              title="Next chord type"
-            >
-              <ChevronRight size={16} />
-            </button>
-            
-            <span className="text-sm text-gray-500 font-medium">
-              {currentChordTypeIndex + 1} of {chordTypeCategories.length}
-            </span>
-          </div>
+          {/* Chord Type Selector - Only show for manually created progressions */}
+          {!state.isLibraryProgression && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePreviousChordType}
+                disabled={currentChordTypeIndex === 0}
+                className="p-1.5 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Previous chord type"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              
+              <select
+                value={state.chordTypeFilter[0] || ''}
+                onChange={(e) => {
+                  handleChordTypeSelect(e.target.value);
+                }}
+                className="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium min-w-[140px]"
+              >
+                {chordTypeCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              
+              <button
+                onClick={handleNextChordType}
+                disabled={currentChordTypeIndex === chordTypeCategories.length - 1}
+                className="p-1.5 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Next chord type"
+              >
+                <ChevronRight size={16} />
+              </button>
+              
+              <span className="text-sm text-gray-500 font-medium">
+                {currentChordTypeIndex + 1} of {chordTypeCategories.length}
+              </span>
+            </div>
+          )}
+          
+          {/* Library Progression Info - Show when using library progression */}
+          {state.isLibraryProgression && (
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-md text-sm font-medium">
+                Library Progression
+              </span>
+              <span className="text-sm text-gray-500">
+                Click chords in progression below to view on fretboard
+              </span>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-4">
@@ -321,15 +378,17 @@ export function FretboardContainer() {
                 </button>
               </div>
               
-              {/* Save to Progression Button */}
-              <button
-                onClick={handleSaveChord}
-                disabled={!state.selectedVoicing}
-                className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="Add chord to progression"
-              >
-                <Plus size={16} />
-              </button>
+              {/* Save to Progression Button - Only for manually created progressions */}
+              {!state.isLibraryProgression && (
+                <button
+                  onClick={handleSaveChord}
+                  disabled={!state.selectedVoicing}
+                  className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Add chord to progression"
+                >
+                  <Plus size={16} />
+                </button>
+              )}
             </div>
           )}
         </div>

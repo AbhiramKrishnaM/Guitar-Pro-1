@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Music, Guitar, Zap } from 'lucide-react';
 import { ALL_PROGRESSIONS, getProgressionsByGenre, searchProgressions } from '../../lib/progressionLibrary';
 import type { ProgressionData } from '../../lib/progressionLibrary';
-// import { useGuitar } from '../../contexts/GuitarContext'; // Available for future chord selection integration
+import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
+import { createChordForFretboard } from '../../lib/musicTheory';
 
 interface ProgressionLibraryProps {
   className?: string;
@@ -13,7 +14,7 @@ type FilterType = 'all' | 'progressive-metal' | 'math-rock';
 type DifficultyType = 'all' | 'beginner' | 'intermediate' | 'advanced';
 
 export function ProgressionLibrary({ className = '' }: ProgressionLibraryProps) {
-  // const { state } = useGuitar(); // Available for future chord selection integration
+  const { state, dispatch } = useGuitar();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<FilterType>('all');
@@ -45,10 +46,33 @@ export function ProgressionLibrary({ className = '' }: ProgressionLibraryProps) 
     navigate(`/progressions/${progression.id}`);
   };
 
-  const handleChordClick = (chordSymbol: string) => {
-    // This would need to be implemented to actually select the chord
-    // For now, we'll just log it
-    console.log('Selected chord:', chordSymbol);
+  const handleChordClick = (chordSymbol: string, progression: ProgressionData) => {
+    try {
+      // Find the chord data from the progression
+      const chordData = progression.chords.find(c => c.symbol === chordSymbol);
+      if (!chordData) {
+        console.error('Chord data not found for:', chordSymbol);
+        return;
+      }
+      
+
+      
+      // Use the robust chord creation function
+      const { chord, voicings } = createChordForFretboard(chordData.root, chordData.type, state.tuning);
+
+      
+      // Set the selected chord and voicing
+      dispatch(guitarActions.setSelectedChord(chord));
+      if (voicings.length > 0) {
+        dispatch(guitarActions.setSelectedVoicing(voicings[0]));
+      }
+      
+    } catch (error) {
+      console.error('Error selecting chord:', error, {
+        chordSymbol,
+        progression: progression.name
+      });
+    }
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -154,7 +178,7 @@ export function ProgressionLibrary({ className = '' }: ProgressionLibraryProps) 
                     key={index}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleChordClick(chord.symbol);
+                      handleChordClick(chord.symbol, progression);
                     }}
                     className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium hover:bg-blue-200 transition-colors"
                   >

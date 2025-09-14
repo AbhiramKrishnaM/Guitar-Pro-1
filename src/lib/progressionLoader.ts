@@ -1,6 +1,6 @@
 import { generateChord, findChordVoicings } from './musicTheory';
-import type { ProgressionData, ChordVoicing } from './progressionLibrary';
-import type { Tuning } from '../types/music';
+import type { ProgressionData } from './progressionLibrary';
+import type { Tuning, ChordVoicing } from '../types/music';
 
 /**
  * Converts a progression from the library into chord voicings that can be loaded into the guitar
@@ -101,9 +101,9 @@ export function loadProgressionAndNavigate(
       payload: chordTypeFilter
     });
     
-    // Load the progression into the guitar context
+    // Load the progression into the guitar context (using library progression action)
     dispatch({
-      type: 'LOAD_PROGRESSION',
+      type: 'LOAD_LIBRARY_PROGRESSION',
       payload: voicings
     });
     

@@ -415,6 +415,84 @@ export function generateChord(root: Note, chordType: string): Chord {
   };
 }
 
+/**
+ * Robust function to create and render any chord on the fretboard
+ * This function ensures that any chord symbol gets properly generated and displayed
+ */
+export function createChordForFretboard(root: Note, chordType: string, tuning: Tuning): {
+  chord: Chord;
+  voicings: ChordVoicing[];
+} {
+
+  
+  try {
+    // Generate the chord
+    const chord = generateChord(root, chordType);
+    
+    // Find voicings for this chord
+    let voicings = findChordVoicings(chord, tuning, 24, 'all');
+   
+    
+    // If no voicings found, create a simple fallback voicing
+    if (voicings.length === 0) {
+      voicings = [{
+        positions: createFallbackVoicing(chord, tuning),
+        inversion: 0,
+        difficulty: 'medium' as const,
+        chord
+      }];
+    }
+    
+    return { chord, voicings };
+  } catch (error) {
+    console.error(`❌ Error creating chord ${root.name}${chordType}:`, error);
+    
+    // Create a basic fallback chord if generation fails
+    const fallbackChord: Chord = {
+      root,
+      type: chordType,
+      notes: [root], // Just the root note as fallback
+      symbol: `${root.name}${chordType}`
+    };
+    
+    const fallbackVoicing: ChordVoicing = {
+      positions: createFallbackVoicing(fallbackChord, tuning),
+      inversion: 0,
+      difficulty: 'medium' as const,
+      chord: fallbackChord
+    };
+    
+    return { 
+      chord: fallbackChord, 
+      voicings: [fallbackVoicing] 
+    };
+  }
+}
+
+/**
+ * Creates a simple fallback voicing when chord generation fails
+ * Places the root note on the lowest string
+ */
+function createFallbackVoicing(chord: Chord, tuning: Tuning): FretPosition[] {
+  const positions: FretPosition[] = [];
+  
+  // Find the root note on the lowest string (last string in tuning)
+  const lowestString = tuning.strings.length - 1;
+  const openNote = tuning.strings[lowestString];
+  
+  // Calculate fret position for root note
+  let fret = (chord.root.semitone - openNote.semitone + 12) % 12;
+  if (fret > 12) fret -= 12; // Keep it in first position
+  
+  positions.push({
+    string: lowestString,
+    fret,
+    note: chord.root
+  });
+  
+  return positions;
+}
+
 // Generate diatonic chords for a key and mode
 export function generateDiatonicChords(key: Note, mode: string, chordTypes: string[] = ['triad']): Chord[] {
   const modeIntervals = MODES[mode as keyof typeof MODES];
@@ -538,6 +616,7 @@ export function findNotePositions(note: Note, tuning: Tuning, maxFret: number = 
 
 // Find chord voicings on fretboard
 export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number = 24, _flexibility: 'strict' | 'flexible' | 'all' = 'strict', rootPosition?: FretPosition): ChordVoicing[] {
+  
   const voicings: ChordVoicing[] = [];
   const stringCount = tuning.strings.length;
   const maxVoicings = 50;
@@ -828,12 +907,14 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
     )
   );
   
-  return uniqueVoicings
+  const finalVoicings = uniqueVoicings
     .sort((a, b) => {
       const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
       return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
     })
     .slice(0, maxVoicings);
+  
+  return finalVoicings;
 }
 
 // Get all available keys

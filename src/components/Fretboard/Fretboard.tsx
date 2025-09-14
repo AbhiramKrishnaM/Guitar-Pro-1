@@ -23,6 +23,7 @@ export function Fretboard({
   onRootPositionClick,
   className = '' 
 }: FretboardProps) {
+ 
   const stringCount = tuning.strings.length;
   const fretCount = 24; // Display 24 frets
   const stringSpacing = 30;
