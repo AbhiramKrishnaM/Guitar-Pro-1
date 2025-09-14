@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useGuitar } from '../../contexts/GuitarContext';
-import { NOTES, generateDiatonicChords, generateChord, addSemitones, findChordVoicings } from '../../lib/musicTheory';
+import { NOTES, generateDiatonicChords, addSemitones, findChordVoicings } from '../../lib/musicTheory';
 import type { Note, Chord, ChordVoicing } from '../../types/music';
 
 interface CircleOfFifthsProps {
@@ -55,7 +55,6 @@ export function CircleOfFifths({ onChordSelect, onKeySelect, onVoicingSelect }: 
 
       // Generate diatonic chords for this key
       const majorChords = generateDiatonicChords(note, 'Ionian', ['triad']);
-      const minorChords = generateDiatonicChords(note, 'Aeolian', ['triad']);
 
       return {
         note,

@@ -3,7 +3,6 @@ import { ArrowLeft, Music, Guitar, Zap } from 'lucide-react';
 import { ALL_PROGRESSIONS } from '../../lib/progressionLibrary';
 import { loadProgressionAndNavigate } from '../../lib/progressionLoader';
 import { useGuitar } from '../../contexts/GuitarContext';
-import type { ProgressionData } from '../../lib/progressionLibrary';
 
 export function ProgressionDetail() {
   const { id } = useParams<{ id: string }>();

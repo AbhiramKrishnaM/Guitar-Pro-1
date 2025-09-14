@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useGuitar, guitarActions } from '../../contexts/GuitarContext';
 import { findChordVoicings } from '../../lib/musicTheory';
 import type { ChordVoicing } from '../../types/music';
-import { ArrowLeft } from 'lucide-react';
 
 interface ChordPaletteProps {
   onBackToChords?: () => void;

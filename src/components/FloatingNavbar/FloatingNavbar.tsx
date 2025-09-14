@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Music, Guitar, X, Layers, BookOpen, Home } from 'lucide-react';
+import { Music, Guitar, X, BookOpen, Home } from 'lucide-react';
 import { ChordDiscovery } from '../ChordDiscovery/ChordDiscovery';
 import { ChordPalette } from '../ChordPalette/ChordPalette';
 import { useGuitar } from '../../contexts/GuitarContext';
@@ -45,13 +45,14 @@ export function FloatingNavbar({ className = '' }: FloatingNavbarProps) {
   //   if (isLibraryOpen) setIsLibraryOpen(false);
   // };
 
-  const toggleExplorer = () => {
-    setIsExplorerOpen(!isExplorerOpen);
-    if (!isExplorerOpen) {
-      setActiveTab('chords'); // Reset to chords tab when opening
-      setLastSelectedChordId(null); // Reset chord tracking when opening
-    }
-  };
+  // Unused function - keeping for potential future use
+  // const toggleExplorer = () => {
+  //   setIsExplorerOpen(!isExplorerOpen);
+  //   if (!isExplorerOpen) {
+  //     setActiveTab('chords'); // Reset to chords tab when opening
+  //     setLastSelectedChordId(null); // Reset chord tracking when opening
+  //   }
+  // };
 
   const navigateToHome = () => {
     navigate('/');
