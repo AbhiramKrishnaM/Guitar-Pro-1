@@ -31,6 +31,7 @@ export interface ChordVoicing {
   inversion: number;
   difficulty: 'easy' | 'medium' | 'hard';
   fingering?: number[]; // Suggested finger numbers (1-4, 0 = open)
+  chord: Chord; // Include the chord information
 }
 
 export interface ChordProgression {

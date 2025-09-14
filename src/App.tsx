@@ -3,6 +3,7 @@ import { GuitarControls } from './components/GuitarControls/GuitarControls';
 import { FretboardContainer } from './components/Fretboard/FretboardContainer';
 import { ProgressionCreator } from './components/ProgressionCreator/ProgressionCreator';
 import { FloatingNavbar } from './components/FloatingNavbar/FloatingNavbar';
+import { Notification } from './components/Notification/Notification';
 
 function App() {
   return (
@@ -34,6 +35,9 @@ function App() {
             <ProgressionCreator />
           </div>
         </div>
+        
+        {/* Notification */}
+        <Notification />
       </div>
     </GuitarProvider>
   );

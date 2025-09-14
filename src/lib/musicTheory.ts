@@ -356,7 +356,8 @@ export function findChordVoicings(chord: Chord, tuning: Tuning, maxFret: number 
         voicings.push({
           positions: [...currentPositions],
           inversion: bassChordIndex,
-          difficulty
+          difficulty,
+          chord: chord
         });
       }
     }

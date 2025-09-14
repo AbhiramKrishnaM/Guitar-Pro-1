@@ -9,17 +9,19 @@ function SortableItem({
   voicing, 
   index, 
   onRemove, 
+  onChordClick,
   chordSymbol 
 }: { 
   id: string; 
   voicing: ChordVoicing; 
   index: number; 
   onRemove: (index: number) => void; 
+  onChordClick: (voicing: ChordVoicing) => void;
   chordSymbol: string; 
 }) {
   const {
-    attributes,
-    listeners,
+    // attributes,
+    // listeners,
     setNodeRef,
     transform,
     transition,
@@ -31,18 +33,35 @@ function SortableItem({
     transition,
   };
 
+  const handleChordClick = (e: React.MouseEvent) => {
+    // Prevent drag when clicking on chord
+    e.stopPropagation();
+    e.preventDefault();
+    onChordClick(voicing);
+  };
+
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    // Prevent drag when clicking remove button
+    e.stopPropagation();
+    e.preventDefault();
+    onRemove(index);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`bg-white p-3 rounded-lg border-2 border-blue-200 shadow-sm hover:shadow-md transition-all duration-200 ${
+      className={`bg-white p-3 rounded-lg border-2 border-blue-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
         isDragging ? 'rotate-2 scale-105' : ''
       }`}
+      onClick={handleChordClick}
+      title="Click to view on fretboard"
+      // Temporarily disable drag and drop to test clicks
+      // {...attributes}
+      // {...listeners}
     >
       <div className="flex items-center justify-between">
-        <div className="text-center">
+        <div className="text-center flex-1">
           <div className="text-sm font-medium text-gray-800">
             {chordSymbol}
           </div>
@@ -51,8 +70,9 @@ function SortableItem({
           </div>
         </div>
         <button
-          onClick={() => onRemove(index)}
-          className="ml-2 text-red-500 hover:text-red-700 text-sm"
+          onClick={handleRemoveClick}
+          className="ml-2 text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full w-5 h-5 flex items-center justify-center transition-colors"
+          title="Remove chord"
         >
           ×
         </button>
@@ -104,6 +124,12 @@ export function ProgressionCreator() {
 
   const handleRemoveChord = (index: number) => {
     dispatch(guitarActions.removeChordFromProgression(index));
+  };
+
+  const handleChordClick = (voicing: ChordVoicing) => {
+    // Set the chord and voicing to display on the fretboard
+    dispatch(guitarActions.setSelectedChord(voicing.chord));
+    dispatch(guitarActions.setSelectedVoicing(voicing));
   };
 
   const handleClearProgression = () => {
@@ -163,7 +189,8 @@ export function ProgressionCreator() {
                     voicing={voicing} 
                     index={index}
                     onRemove={handleRemoveChord}
-                    chordSymbol={state.selectedChord?.symbol || 'Chord'}
+                    onChordClick={handleChordClick}
+                    chordSymbol={voicing.chord.symbol}
                   />
                 ))}
               </div>

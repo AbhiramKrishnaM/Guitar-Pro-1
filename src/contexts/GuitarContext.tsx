@@ -18,10 +18,17 @@ type GuitarAction =
   | { type: 'ADD_CHORD_TO_PROGRESSION'; payload: ChordVoicing }
   | { type: 'REMOVE_CHORD_FROM_PROGRESSION'; payload: number }
   | { type: 'CLEAR_PROGRESSION' }
-  | { type: 'SAVE_PROGRESSION'; payload: ChordProgression };
+  | { type: 'SAVE_PROGRESSION'; payload: ChordProgression }
+  | { type: 'SHOW_NOTIFICATION'; payload: { message: string; type: 'success' | 'error' | 'info' } }
+  | { type: 'HIDE_NOTIFICATION' };
 
 // Initial state
-const initialState: GuitarSettings & { progression: ChordVoicing[]; rootPosition?: FretPosition; rootPositionMode: boolean } = {
+const initialState: GuitarSettings & { 
+  progression: ChordVoicing[]; 
+  rootPosition?: FretPosition; 
+  rootPositionMode: boolean;
+  notification?: { message: string; type: 'success' | 'error' | 'info' };
+} = {
   guitarType: '6-string',
   tuning: STANDARD_TUNINGS[0], // E Standard
   key: getAllKeys()[0], // C
@@ -32,7 +39,8 @@ const initialState: GuitarSettings & { progression: ChordVoicing[]; rootPosition
   voicingFlexibility: 'strict', // Start with strict voicings
   rootPosition: undefined,
   rootPositionMode: false,
-  progression: []
+  progression: [],
+  notification: undefined
 };
 
 // Reducer
@@ -71,7 +79,10 @@ function guitarReducer(
       return {
         ...state,
         selectedChord: action.payload,
-        selectedVoicing: undefined, // Reset voicing when chord changes
+        // Only reset voicing if it's a different chord
+        selectedVoicing: action.payload && state.selectedChord?.symbol === action.payload.symbol 
+          ? state.selectedVoicing 
+          : undefined,
         rootPosition: undefined // Reset root position when chord changes
       };
     
@@ -109,13 +120,22 @@ function guitarReducer(
     case 'ADD_CHORD_TO_PROGRESSION':
       return {
         ...state,
-        progression: [...state.progression, action.payload]
+        progression: [...state.progression, action.payload],
+        notification: {
+          message: `Added ${action.payload.chord.symbol} to progression`,
+          type: 'success'
+        }
       };
     
     case 'REMOVE_CHORD_FROM_PROGRESSION':
+      const removedChord = state.progression[action.payload];
       return {
         ...state,
-        progression: state.progression.filter((_, index) => index !== action.payload)
+        progression: state.progression.filter((_, index) => index !== action.payload),
+        notification: removedChord ? {
+          message: `Removed ${removedChord.chord.symbol} from progression`,
+          type: 'info'
+        } : undefined
       };
     
     case 'CLEAR_PROGRESSION':
@@ -127,7 +147,25 @@ function guitarReducer(
     case 'SAVE_PROGRESSION':
       // This would typically save to localStorage or a backend
       console.log('Saving progression:', action.payload);
-      return state;
+      return {
+        ...state,
+        notification: {
+          message: 'Progression saved successfully!',
+          type: 'success'
+        }
+      };
+    
+    case 'SHOW_NOTIFICATION':
+      return {
+        ...state,
+        notification: action.payload
+      };
+    
+    case 'HIDE_NOTIFICATION':
+      return {
+        ...state,
+        notification: undefined
+      };
     
     default:
       return state;
@@ -230,5 +268,15 @@ export const guitarActions = {
   saveProgression: (progression: ChordProgression) => ({
     type: 'SAVE_PROGRESSION' as const,
     payload: progression
+  }),
+  
+  showNotification: (message: string, type: 'success' | 'error' | 'info') => ({
+    type: 'SHOW_NOTIFICATION' as const,
+    payload: { message, type }
+  }),
+  
+  hideNotification: () => ({
+    type: 'HIDE_NOTIFICATION' as const,
+    payload: null
   })
 };
