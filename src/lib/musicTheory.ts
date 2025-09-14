@@ -51,6 +51,7 @@ export const MODES = {
 
 // Standard tunings
 export const STANDARD_TUNINGS: Tuning[] = [
+  // 6-string tunings
   {
     id: 'e-standard-6',
     name: 'E Standard',
@@ -91,6 +92,124 @@ export const STANDARD_TUNINGS: Tuning[] = [
     ]
   },
   {
+    id: 'asharp-f-6',
+    name: 'A# F A# D# G C',
+    guitarType: '6-string',
+    strings: [
+      { name: 'A#', semitone: 10 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 },
+      { name: 'G', semitone: 7 },
+      { name: 'C', semitone: 0 }
+    ]
+  },
+  {
+    id: 'dsharp-gsharp-6',
+    name: 'D# G# C# F# A# D#',
+    guitarType: '6-string',
+    strings: [
+      { name: 'D#', semitone: 3 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 },
+      { name: 'F#', semitone: 6 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 }
+    ]
+  },
+  {
+    id: 'd-a-d-g-a-d-6',
+    name: 'D A D G A D',
+    guitarType: '6-string',
+    strings: [
+      { name: 'D', semitone: 2 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'G', semitone: 7 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 }
+    ]
+  },
+  {
+    id: 'csharp-gsharp-6',
+    name: 'C# G# C# F# G# C#',
+    guitarType: '6-string',
+    strings: [
+      { name: 'C#', semitone: 1 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 },
+      { name: 'F#', semitone: 6 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 }
+    ]
+  },
+  {
+    id: 'c-g-c-f-a-d-6',
+    name: 'C G C F A D',
+    guitarType: '6-string',
+    strings: [
+      { name: 'C', semitone: 0 },
+      { name: 'G', semitone: 7 },
+      { name: 'C', semitone: 0 },
+      { name: 'F', semitone: 5 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 }
+    ]
+  },
+  {
+    id: 'd-a-d-fsharp-a-e-6',
+    name: 'D A D F# A E',
+    guitarType: '6-string',
+    strings: [
+      { name: 'D', semitone: 2 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'F#', semitone: 6 },
+      { name: 'A', semitone: 9 },
+      { name: 'E', semitone: 4 }
+    ]
+  },
+  {
+    id: 'd-a-d-fsharp-b-d-6',
+    name: 'D A D F# B D',
+    guitarType: '6-string',
+    strings: [
+      { name: 'D', semitone: 2 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'F#', semitone: 6 },
+      { name: 'B', semitone: 11 },
+      { name: 'D', semitone: 2 }
+    ]
+  },
+  {
+    id: 'f-a-c-g-c-e-6',
+    name: 'F A C G C E',
+    guitarType: '6-string',
+    strings: [
+      { name: 'F', semitone: 5 },
+      { name: 'A', semitone: 9 },
+      { name: 'C', semitone: 0 },
+      { name: 'G', semitone: 7 },
+      { name: 'C', semitone: 0 },
+      { name: 'E', semitone: 4 }
+    ]
+  },
+  {
+    id: 'd-a-d-fsharp-b-e-6',
+    name: 'D A D F# B E',
+    guitarType: '6-string',
+    strings: [
+      { name: 'D', semitone: 2 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'F#', semitone: 6 },
+      { name: 'B', semitone: 11 },
+      { name: 'E', semitone: 4 }
+    ]
+  },
+  // 7-string tunings
+  {
     id: 'b-standard-7',
     name: 'B Standard (7-string)',
     guitarType: '7-string',
@@ -100,6 +219,161 @@ export const STANDARD_TUNINGS: Tuning[] = [
       { name: 'A', semitone: 9 },
       { name: 'D', semitone: 2 },
       { name: 'G', semitone: 7 },
+      { name: 'B', semitone: 11 },
+      { name: 'E', semitone: 4 }
+    ]
+  },
+  {
+    id: 'dsharp-asharp-7',
+    name: 'D# A# D# G# C# F A#',
+    guitarType: '7-string',
+    strings: [
+      { name: 'D#', semitone: 3 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 }
+    ]
+  },
+  {
+    id: 'fsharp-csharp-7',
+    name: 'F# C# F# B E G# C#',
+    guitarType: '7-string',
+    strings: [
+      { name: 'F#', semitone: 6 },
+      { name: 'C#', semitone: 1 },
+      { name: 'F#', semitone: 6 },
+      { name: 'B', semitone: 11 },
+      { name: 'E', semitone: 4 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 }
+    ]
+  },
+  {
+    id: 'e-b-e-a-d-fsharp-b-7',
+    name: 'E B E A D F# B',
+    guitarType: '7-string',
+    strings: [
+      { name: 'E', semitone: 4 },
+      { name: 'B', semitone: 11 },
+      { name: 'E', semitone: 4 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'F#', semitone: 6 },
+      { name: 'B', semitone: 11 }
+    ]
+  },
+  {
+    id: 'gsharp-dsharp-7',
+    name: 'G# D# G# C# F A# D#',
+    guitarType: '7-string',
+    strings: [
+      { name: 'G#', semitone: 8 },
+      { name: 'D#', semitone: 3 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 }
+    ]
+  },
+  {
+    id: 'f-c-f-asharp-dsharp-g-c-7',
+    name: 'F C F A# D# G C',
+    guitarType: '7-string',
+    strings: [
+      { name: 'F', semitone: 5 },
+      { name: 'C', semitone: 0 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 },
+      { name: 'G', semitone: 7 },
+      { name: 'C', semitone: 0 }
+    ]
+  },
+  {
+    id: 'f-c-f-asharp-d-g-c-7',
+    name: 'F C F A# D G C',
+    guitarType: '7-string',
+    strings: [
+      { name: 'F', semitone: 5 },
+      { name: 'C', semitone: 0 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D', semitone: 2 },
+      { name: 'G', semitone: 7 },
+      { name: 'C', semitone: 0 }
+    ]
+  },
+  {
+    id: 'asharp-f-asharp-dsharp-f-asharp-dsharp-7',
+    name: 'A# F A# D# F A# D#',
+    guitarType: '7-string',
+    strings: [
+      { name: 'A#', semitone: 10 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 }
+    ]
+  },
+  {
+    id: 'f-asharp-f-asharp-dsharp-f-asharp-dsharp-7',
+    name: 'F A# F A# D# F A# D#',
+    guitarType: '7-string',
+    strings: [
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 },
+      { name: 'F', semitone: 5 },
+      { name: 'A#', semitone: 10 },
+      { name: 'D#', semitone: 3 }
+    ]
+  },
+  {
+    id: 'gsharp-dsharp-gsharp-csharp-dsharp-gsharp-csharp-7',
+    name: 'G# D# G# C# D# G# C#',
+    guitarType: '7-string',
+    strings: [
+      { name: 'G#', semitone: 8 },
+      { name: 'D#', semitone: 3 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 },
+      { name: 'D#', semitone: 3 },
+      { name: 'G#', semitone: 8 },
+      { name: 'C#', semitone: 1 }
+    ]
+  },
+  {
+    id: 'a-e-a-d-g-b-e-7',
+    name: 'A E A D G B E',
+    guitarType: '7-string',
+    strings: [
+      { name: 'A', semitone: 9 },
+      { name: 'E', semitone: 4 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'G', semitone: 7 },
+      { name: 'B', semitone: 11 },
+      { name: 'E', semitone: 4 }
+    ]
+  },
+  {
+    id: 'a-d-a-d-fsharp-b-e-7',
+    name: 'A D A D F# B E',
+    guitarType: '7-string',
+    strings: [
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'A', semitone: 9 },
+      { name: 'D', semitone: 2 },
+      { name: 'F#', semitone: 6 },
       { name: 'B', semitone: 11 },
       { name: 'E', semitone: 4 }
     ]
