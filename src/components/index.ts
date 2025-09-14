@@ -8,4 +8,7 @@ export { ProgressionCreator } from './ProgressionCreator/ProgressionCreator';
 export { ProgressionLibrary } from './ProgressionLibrary/ProgressionLibrary';
 export { Tooltip, InfoIcon } from './Tooltip/Tooltip';
 export { FloatingNavbar } from './FloatingNavbar/FloatingNavbar';
+export { RightFloatingNavbar } from './RightFloatingNavbar/RightFloatingNavbar';
+export { CircleOfFifths } from './CircleOfFifths/CircleOfFifths';
+export { Modal } from './Modal/Modal';
 export { Notification } from './Notification/Notification';

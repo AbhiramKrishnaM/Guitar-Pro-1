@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GuitarProvider } from './contexts/GuitarContext';
 import { FloatingNavbar } from './components/FloatingNavbar/FloatingNavbar';
+import { RightFloatingNavbar } from './components/RightFloatingNavbar/RightFloatingNavbar';
 import { Notification } from './components/Notification/Notification';
 import { Home } from './pages/Home';
 import { ProgressionLibraryPage } from './pages/ProgressionLibraryPage';
@@ -12,6 +13,9 @@ function App() {
         <div className="min-h-screen bg-gray-100">
           {/* Floating Navbar */}
           <FloatingNavbar />
+          
+          {/* Right Floating Navbar */}
+          <RightFloatingNavbar />
           
           <Routes>
             <Route 
