@@ -4,7 +4,7 @@ import { Fretboard } from './Fretboard';
 import { findChordVoicings, generateDiatonicChords, getChordTypeCategories } from '../../lib/musicTheory';
 import { Switch } from '../ui/switch';
 import type { FretPosition, ChordVoicing, Chord } from '../../types/music';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 export function FretboardContainer() {
   const { state, dispatch } = useGuitar();
@@ -157,6 +157,12 @@ export function FretboardContainer() {
     }
   }, [currentVoicingIndex, voicings.length]);
 
+  const handleSaveChord = useCallback(() => {
+    if (state.selectedVoicing) {
+      dispatch(guitarActions.addChordToProgression(state.selectedVoicing));
+    }
+  }, [state.selectedVoicing, dispatch]);
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg border w-full">
       <div className="flex items-center justify-between mb-4">
@@ -294,6 +300,16 @@ export function FretboardContainer() {
                   <ChevronRight size={20} />
                 </button>
               </div>
+              
+              {/* Save to Progression Button */}
+              <button
+                onClick={handleSaveChord}
+                disabled={!state.selectedVoicing}
+                className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Add chord to progression"
+              >
+                <Plus size={16} />
+              </button>
             </div>
           )}
         </div>
